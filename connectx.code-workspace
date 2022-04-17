@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.sortImports.path": "/Users/keisuke.nakata/.pyenv/versions/3.9.12/envs/connectx/bin/isort",
+		"python.linting.flake8Args": [
+			"--config=/Users/keisuke.nakata/Projects/kaggle/connectx/setup.cfg"
+		],
+		"python.linting.mypyArgs": [
+			"--follow-imports=silent",
+			"--ignore-missing-imports",
+			"--show-column-numbers",
+			"--no-pretty",
+			"--config-file=/Users/keisuke.nakata/Projects/kaggle/connectx/setup.cfg"
+		],
+		"python.linting.cwd": "",
+		"python.linting.mypyPath": "/Users/keisuke.nakata/.pyenv/versions/3.9.12/envs/connectx/bin/mypy"
+	}
+}
