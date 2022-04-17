@@ -1,9 +1,8 @@
 import random
 
 import numpy as np
-from numpy.lib.stride_tricks import sliding_window_view
 
-from connectx.tutorial.env_types import Observation, Config, Mark, Action
+from connectx.tutorial.connectx_game import Observation, Config, Mark, generate_windows
 
 
 def drop_piece(grid: np.ndarray, col: int, mark: Mark, rows: int) -> np.ndarray:
@@ -32,51 +31,10 @@ def _score_window(window: np.ndarray, mark: Mark, inarow: int) -> float:
     return score
 
 
-def _score_grid_horizontal(grid: np.ndarray, mark: Mark, inarow: int) -> float:
-    score = 0.0
-    for row in grid:
-        for window in sliding_window_view(row, inarow):
-            score += _score_window(window, mark, inarow)
-    return score
-
-
-def _score_grid_vertical(grid: np.ndarray, mark: Mark, inarow: int) -> float:
-    score = 0.0
-    for col in grid.T:
-        for window in sliding_window_view(col, inarow):
-            score += _score_window(window, mark, inarow)
-    return score
-
-
-def _score_grid_positive_diagonal(grid: np.ndarray, mark: Mark, inarow: int) -> float:
-    score = 0.0
-    nrow, ncol = grid.shape
-    for diag_idx in range(-nrow + 1, ncol):
-        diag = grid.diagonal(diag_idx)
-        if len(diag) >= inarow:
-            for window in sliding_window_view(diag, inarow):
-                score += _score_window(window, mark, inarow)
-    return score
-
-
-def _score_grid_negative_diagonal(grid: np.ndarray, mark: Mark, inarow: int) -> float:
-    score = 0.0
-    grid_flipped = np.fliplr(grid)
-    nrow, ncol = grid_flipped.shape
-    for diag_idx in range(-nrow + 1, ncol):
-        diag = grid_flipped.diagonal(diag_idx)
-        if len(diag) >= inarow:
-            for window in sliding_window_view(diag, inarow):
-                score += _score_window(window, mark, inarow)
-    return score
-
-
 def score_grid(grid: np.ndarray, mark: Mark, inarow: int) -> float:
     score = 0.0
-    score += _score_grid_horizontal(grid, mark, inarow)
-    score += _score_grid_vertical(grid, mark, inarow)
-    score += _score_grid_positive_diagonal(grid, mark, inarow)
-    score += _score_grid_negative_diagonal(grid, mark, inarow)
+    for window in generate_windows(grid, inarow):
+        score += _score_window(window, mark, inarow)
     return score
 
 
@@ -91,7 +49,7 @@ def score_move(grid: np.ndarray, col: int, mark: Mark, config: Config) -> float:
     return score_grid(next_grid, mark, config.inarow)
 
 
-def agent(obs: Observation, config: Config) -> Action:
+def agent(obs: Observation, config: Config) -> int:
     # Get list of valid moves
     valid_moves = [c for c in range(config.columns) if obs.board[c] == 0]
     # Convert the board to a 2D grid
