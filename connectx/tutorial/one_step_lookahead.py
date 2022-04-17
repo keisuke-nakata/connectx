@@ -66,11 +66,8 @@ def _score_grid_negative_diagonal(grid: np.ndarray, mark: Mark, inarow: int) -> 
     for diag_idx in range(-nrow + 1, ncol):
         diag = grid_flipped.diagonal(diag_idx)
         if len(diag) >= inarow:
-            print(diag)
             for window in sliding_window_view(diag, inarow):
-                print("  " + str(window))
                 score += _score_window(window, mark, inarow)
-                print("  " + str(score))
     return score
 
 
