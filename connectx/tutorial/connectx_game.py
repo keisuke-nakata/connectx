@@ -1,4 +1,5 @@
-from typing import Tuple, Sequence, Literal, Iterable, Callable
+from collections.abc import Sequence, Iterable, Callable
+from typing import Literal
 from dataclasses import dataclass
 import itertools
 
@@ -54,7 +55,7 @@ class ConnectXGame(Game[ConnectXState, ConnectXAction]):
     def __init__(self, config: Config) -> None:
         self.config = config
 
-    def get_terminal_score(self, state: ConnectXState) -> Tuple[bool, float]:
+    def get_terminal_score(self, state: ConnectXState) -> tuple[bool, float]:
         """
         state が最終状態 (それ以上手がない) であれば (True, score) を返す。
         そうでない場合、(False, nan) を返す。

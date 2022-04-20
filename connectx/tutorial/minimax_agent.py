@@ -3,7 +3,7 @@ import random
 
 import numpy as np
 
-from connectx.tutorial.connectx_game import Observation, Config, ConnectXAction, ConnectXState, ConnectXGame, generate_windows, Mark
+from connectx.tutorial.connectx_game import Observation, Config, ConnectXState, ConnectXGame, generate_windows, Mark
 from connectx.tutorial.minimax import argminimax, Scorer
 
 

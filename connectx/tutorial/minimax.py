@@ -1,5 +1,6 @@
 import abc
-from typing import Sequence, TypeVar, Generic, Tuple
+from collections.abc import Sequence
+from typing import TypeVar, Generic
 
 
 class State(abc.ABC):
@@ -22,7 +23,7 @@ class Game(abc.ABC, Generic[S, A]):
     """
 
     @abc.abstractmethod
-    def get_terminal_score(self, state: S) -> Tuple[bool, float]:
+    def get_terminal_score(self, state: S) -> tuple[bool, float]:
         """
         state が最終状態 (それ以上手がない) であれば (True, score) を返す。
         そうでない場合、(False, nan) を返す。
@@ -44,36 +45,43 @@ class Scorer(abc.ABC, Generic[S]):
         pass
 
 
-def minimax(game: Game, depth: int, state: State, scorer: Scorer) -> float:
-    is_terminal, score = game.get_terminal_score(state)
-    if is_terminal:
-        # print(f"{state.i}: {score}")
-        return score
-    if depth == 0:
-        # print(f"{state.i}: {user_score_fn(state)}")
-        return scorer(state)
-    available_actions = game.get_available_actions(state)
-    next_states = (game.step(state, action) for action in available_actions)
-    next_scores = (minimax(game, depth - 1, next_state, scorer) for next_state in next_states)
-    if state.is_opponent_turn:
-        next_score = min(next_scores)
-    else:
-        next_score = max(next_scores)
-    # print(f"{state.i}: {next_score}")
-    return next_score
+G = TypeVar("G", bound=Game)
+SC = TypeVar("SC", bound=Scorer)
 
 
-def argminimax(game: Game, depth: int, state: State, scorer: Scorer) -> Tuple[Sequence[float], Sequence[Action]]:
-    is_terminal, score = game.get_terminal_score(state)
-    if is_terminal:
-        raise RuntimeError
-    if depth == 0:
-        raise RuntimeError
-    available_actions = game.get_available_actions(state)
-    if len(available_actions) == 0:
-        raise RuntimeError
-    scores = [minimax(game, depth - 1, game.step(state, action), scorer) for action in available_actions]
-    return scores, available_actions
+class Minimax(abc.ABC, Generic[G, S, SC]):
+    def __init__(self, game: G) -> None:
+        self._game = game
+
+    def __call__(self, depth: int, state: S, scorer: SC) -> float:
+        is_terminal, score = self._game.get_terminal_score(state)
+        if is_terminal:
+            return score
+        if depth == 0:
+            return scorer(state)
+        available_actions = self._game.get_available_actions(state)
+        next_states = (self._game.step(state, action) for action in available_actions)
+        next_scores = (self.__call__(depth - 1, next_state, scorer) for next_state in next_states)
+        if state.is_opponent_turn:
+            next_score = min(next_scores)
+        else:
+            next_score = max(next_scores)
+        return next_score
+
+    def argminimax(self, depth: int, state: S, scorer: SC) -> float:
+        is_terminal, score = self._game.get_terminal_score(state)
+        if is_terminal:
+            return score
+        if depth == 0:
+            return scorer(state)
+        available_actions = self._game.get_available_actions(state)
+        next_states = (self._game.step(state, action) for action in available_actions)
+        next_scores = (self.__call__(depth - 1, next_state, scorer) for next_state in next_states)
+        if state.is_opponent_turn:
+            next_score = min(next_scores)
+        else:
+            next_score = max(next_scores)
+        return next_score
 
 
 if __name__ == "__main__":
@@ -90,7 +98,7 @@ if __name__ == "__main__":
             self.to = to
 
     class ToyGame(Game[ToyState, ToyAction]):
-        def get_terminal_score(self, state: ToyState) -> Tuple[bool, float]:
+        def get_terminal_score(self, state: ToyState) -> tuple[bool, float]:
             x = (
                 (False, float("nan")),
                 (False, float("nan")),
@@ -134,5 +142,10 @@ if __name__ == "__main__":
             }
             return x[state.i]
 
-    print(minimax(ToyGame(), depth=3, state=ToyState(0), scorer=ToyScorer()))
-    print(argminimax(ToyGame(), depth=3, state=ToyState(0), scorer=ToyScorer()))
+    class ToyMinimax(Minimax[ToyGame, ToyState, ToyScorer]):
+        pass
+
+    minimax = ToyMinimax(ToyGame())
+
+    print(minimax(depth=3, state=ToyState(0), scorer=ToyScorer()))
+    print(minimax.argminimax(depth=3, state=ToyState(0), scorer=ToyScorer()))
