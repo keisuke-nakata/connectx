@@ -68,20 +68,17 @@ class Minimax(abc.ABC, Generic[G, S, SC]):
             next_score = max(next_scores)
         return next_score
 
-    def argminimax(self, depth: int, state: S, scorer: SC) -> float:
+    def argminimax(self, depth: int, state: S, scorer: SC) -> tuple[Sequence[float], Sequence[Action]]:
         is_terminal, score = self._game.get_terminal_score(state)
         if is_terminal:
-            return score
+            raise RuntimeError
         if depth == 0:
-            return scorer(state)
+            raise RuntimeError
         available_actions = self._game.get_available_actions(state)
-        next_states = (self._game.step(state, action) for action in available_actions)
-        next_scores = (self.__call__(depth - 1, next_state, scorer) for next_state in next_states)
-        if state.is_opponent_turn:
-            next_score = min(next_scores)
-        else:
-            next_score = max(next_scores)
-        return next_score
+        if len(available_actions) == 0:
+            raise RuntimeError
+        scores = [self.__call__(depth - 1, self._game.step(state, action), scorer) for action in available_actions]
+        return scores, available_actions
 
 
 if __name__ == "__main__":
