@@ -1,11 +1,17 @@
 import abc
 from collections.abc import Sequence
 from typing import TypeVar, Generic
+import enum
+
+
+class Turn(enum.Enum):
+    PLAYER = enum.auto()
+    OPPONENT = enum.auto()
 
 
 class State(abc.ABC):
     @abc.abstractproperty
-    def is_opponent_turn(self) -> bool:
+    def next_turn(self) -> Turn:
         pass
 
 
@@ -62,17 +68,16 @@ class Minimax(abc.ABC, Generic[G, S, A, SC]):
         available_actions = self._game.get_available_actions(state)
         next_states = (self._game.step(state, action) for action in available_actions)
         next_scores = (self.__call__(depth - 1, next_state, scorer) for next_state in next_states)
-        if state.is_opponent_turn:
-            next_score = min(next_scores)
+        if state.next_turn == Turn.OPPONENT:
+            return min(next_scores)
         else:
-            next_score = max(next_scores)
-        return next_score
+            return max(next_scores)
 
     def argminimax(self, depth: int, state: S, scorer: SC) -> tuple[Sequence[float], Sequence[A]]:
+        if depth == 0:
+            raise RuntimeError
         is_terminal, score = self._game.get_terminal_score(state)
         if is_terminal:
-            raise RuntimeError
-        if depth == 0:
             raise RuntimeError
         available_actions = self._game.get_available_actions(state)
         if len(available_actions) == 0:
@@ -87,8 +92,11 @@ if __name__ == "__main__":
             self.i = i
 
         @property
-        def is_opponent_turn(self) -> bool:
-            return self.i in (1, 2, 7, 8, 9, 10, 11, 12, 13, 14)
+        def next_turn(self) -> Turn:
+            if self.i in (1, 2, 7, 8, 9, 10, 11, 12, 13, 14):
+                return Turn.OPPONENT
+            else:
+                return Turn.PLAYER
 
     class ToyAction(Action):
         def __init__(self, to: int) -> None:

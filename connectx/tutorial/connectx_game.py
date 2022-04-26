@@ -49,8 +49,11 @@ class ConnectXState(minimax.State):
         self.next_player = next_player
 
     @property
-    def is_opponent_turn(self) -> bool:
-        return self.next_player == 2
+    def next_turn(self) -> minimax.Turn:
+        if self.next_player == 1:
+            return minimax.Turn.PLAYER
+        else:
+            return minimax.Turn.OPPONENT
 
 
 class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):

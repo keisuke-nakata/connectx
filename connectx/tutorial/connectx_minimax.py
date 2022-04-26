@@ -2,8 +2,7 @@ from typing import Literal
 
 import numpy as np
 
-from connectx.tutorial import connectx_game
-from connectx.tutorial import minimax
+from connectx.tutorial import connectx_game, minimax
 
 
 class ConnectXScorer(minimax.Scorer[connectx_game.ConnectXState]):
@@ -37,5 +36,12 @@ class ConnectXScorer(minimax.Scorer[connectx_game.ConnectXState]):
         return score_grid(state.grid, mark, self.inarow)
 
 
-class ConnectXMinimax(minimax.Minimax[connectx_game.ConnectXGame, connectx_game.ConnectXState, connectx_game.ConnectXAction, connectx_game.ConnectXScorer]):
+class ConnectXMinimax(
+    minimax.Minimax[
+        connectx_game.ConnectXGame,
+        connectx_game.ConnectXState,
+        connectx_game.ConnectXAction,
+        ConnectXScorer,
+    ]
+):
     pass
