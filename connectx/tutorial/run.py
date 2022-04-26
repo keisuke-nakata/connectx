@@ -4,8 +4,8 @@ from typing import Union
 import numpy as np
 from kaggle_environments import make, evaluate
 
-from connectx.tutorial.one_step_lookahead import agent as one_step_agent
-from connectx.tutorial.minimax_agent import agent as minimax_agent
+from connectx.tutorial import one_step_lookahead_agent
+from connectx.tutorial import minimax_agent
 
 Agent = Union[Callable, str]
 
@@ -28,30 +28,28 @@ if __name__ == "__main__":
     outdir = Path("./out").resolve()
     outdir.mkdir(exist_ok=True)
 
-    # env = make("connectx", debug=True)
-    # env.run([one_step_agent, "random"])
-    # html = env.render(mode="html")
-    # with open(outdir / "a.html", "w") as f:
-    #     print(html, file=f)
-    # get_win_percentages(one_step_agent, "random")
-
-    # env = make("connectx", debug=True)
-    # env.run([minimax_agent, "random"])
-    # html = env.render(mode="html")
-    # with open(outdir / "a.html", "w") as f:
-    #     print(html, file=f)
-    # get_win_percentages(minimax_agent, "random")
-
     env = make("connectx", debug=True)
-    env.run([minimax_agent, one_step_agent])
-    html = env.render(mode="html")
-    with open(outdir / outdir / "a.html", "w") as f:
-        print(html, file=f)
-    # get_win_percentages(minimax_agent, "random")
 
-    # env = make("connectx", debug=True)
-    # env.run([minimax_agent, minimax_agent])
+    env.run([one_step_lookahead_agent.agent, "random"])
+    html = env.render(mode="html")
+    with open(outdir / "a.html", "w") as f:
+        print(html, file=f)
+    # get_win_percentages(one_step_lookahead_agent.agent, "random")
+
+    # env.run([minimax_agent.agent, "random"])
+    # html = env.render(mode="html")
+    # with open(outdir / "a.html", "w") as f:
+    #     print(html, file=f)
+    # get_win_percentages(minimax_agent.agent, "random")
+
+    # env.run([minimax_agent.agent, one_step_lookahead_agent.agent])
+    # html = env.render(mode="html")
+    # with open(outdir / outdir / "a.html", "w") as f:
+    #     print(html, file=f)
+    # get_win_percentages(minimax_agent.agent, one_step_lookahead_agent.agent)
+
+    # env.run([minimax_agent.agent, minimax_agent.agent])
     # html = env.render(mode="html")
     # with open("a.html", "w") as f:
     #     print(html, file=f)
-    # get_win_percentages(minimax_agent, "random")
+    # get_win_percentages(minimax_agent.agent, "random")

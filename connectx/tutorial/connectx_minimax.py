@@ -2,16 +2,16 @@ from typing import Literal
 
 import numpy as np
 
-from connectx.tutorial.connectx_game import ConnectXState, ConnectXAction, ConnectXGame, generate_windows, Mark
-from connectx.tutorial.minimax import Minimax, Scorer
+from connectx.tutorial import connectx_game
+from connectx.tutorial import minimax
 
 
-class ConnectXScorer(Scorer[ConnectXState]):
+class ConnectXScorer(minimax.Scorer[connectx_game.ConnectXState]):
     def __init__(self, inarow: int) -> None:
         self.inarow = inarow
 
-    def __call__(self, state: ConnectXState) -> float:
-        def _score_window(window: np.ndarray, mark: Mark, inarow: int) -> float:
+    def __call__(self, state: connectx_game.ConnectXState) -> float:
+        def _score_window(window: np.ndarray, mark: connectx_game.Mark, inarow: int) -> float:
             score = 0.0
             if (window == mark).sum() == inarow:
                 score += 1_000_000
@@ -27,9 +27,9 @@ class ConnectXScorer(Scorer[ConnectXState]):
                             score += -100
             return score
 
-        def score_grid(grid: np.ndarray, mark: Mark, inarow: int) -> float:
+        def score_grid(grid: np.ndarray, mark: connectx_game.Mark, inarow: int) -> float:
             score = 0.0
-            for window in generate_windows(grid, inarow):
+            for window in connectx_game.generate_windows(grid, inarow):
                 score += _score_window(window, mark, inarow)
             return score
 
@@ -37,5 +37,5 @@ class ConnectXScorer(Scorer[ConnectXState]):
         return score_grid(state.grid, mark, self.inarow)
 
 
-class ConnectXMinimax(Minimax[ConnectXGame, ConnectXState, ConnectXAction, ConnectXScorer]):
+class ConnectXMinimax(minimax.Minimax[connectx_game.ConnectXGame, connectx_game.ConnectXState, connectx_game.ConnectXAction, connectx_game.ConnectXScorer]):
     pass

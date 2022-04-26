@@ -1,18 +1,18 @@
 from collections.abc import Sequence, Iterable, Callable
 from typing import Literal
-from dataclasses import dataclass
+import dataclasses
 import itertools
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 
-from connectx.tutorial.minimax import Action, State, Game
+from connectx.tutorial import minimax
 
 
 Mark = Literal[1, 2]  # 1: player, 2: opponent
 
 
-@dataclass
+@dataclasses.dataclass
 class Observation:
     board: Sequence[Literal[0, 1, 2]]  # 0: empty, 1: player, 2: opponent
     mark: Mark
@@ -20,14 +20,14 @@ class Observation:
     step: int
 
 
-@dataclass
+@dataclasses.dataclass
 class Config:
     columns: int
     rows: int
     inarow: int
 
 
-class ConnectXAction(Action):
+class ConnectXAction(minimax.Action):
     col: int
 
     def __init__(self, col: int) -> None:
@@ -43,7 +43,7 @@ class ConnectXAction(Action):
         return str(self)
 
 
-class ConnectXState(State):
+class ConnectXState(minimax.State):
     def __init__(self, grid: np.ndarray, next_player: Mark) -> None:
         self.grid = grid
         self.next_player = next_player
@@ -53,36 +53,38 @@ class ConnectXState(State):
         return self.next_player == 2
 
 
-class ConnectXGame(Game[ConnectXState, ConnectXAction]):
-    def __init__(self, config: Config) -> None:
-        self.config = config
+class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
+    def __init__(self, columns: int, rows: int, inarow: int) -> None:
+        self.columns = columns
+        self.rows = rows
+        self.inarow = inarow
 
     def get_terminal_score(self, state: ConnectXState) -> tuple[bool, float]:
         """
         state が最終状態 (それ以上手がない) であれば (True, score) を返す。
         そうでない場合、(False, nan) を返す。
         """
-        for window in generate_windows(state.grid, self.config.inarow):
-            if (window == 1).sum() == self.config.inarow:
+        for window in generate_windows(state.grid, self.inarow):
+            if (window == 1).sum() == self.inarow:
                 return (True, 1_000_000)
-            elif (window == 2).sum() == self.config.inarow:
+            elif (window == 2).sum() == self.inarow:
                 return (True, -10_000)
         if len(self.get_available_actions(state)) == 0:
             return (True, 0)
         return (False, float("nan"))
 
     def get_available_actions(self, state: ConnectXState) -> Sequence[ConnectXAction]:
-        return [ConnectXAction(c) for c in range(self.config.columns) if state.grid[0][c] == 0]
+        return [ConnectXAction(c) for c in range(self.columns) if state.grid[0][c] == 0]
 
     def step(self, state: ConnectXState, action: ConnectXAction) -> ConnectXState:
-        for rev_row in range(self.config.rows):
-            if state.grid[self.config.rows - rev_row - 1, action.col] == 0:
+        for row in reversed(range(self.rows)):
+            if state.grid[row, action.col] == 0:
                 break
         else:
             raise RuntimeError("Invalid action")
 
         next_grid = state.grid.copy()
-        next_grid[self.config.rows - rev_row - 1, action.col] = state.next_player
+        next_grid[row, action.col] = state.next_player
         next_player: Literal[1, 2] = 1 if state.next_player == 2 else 2
         return ConnectXState(next_grid, next_player)
 

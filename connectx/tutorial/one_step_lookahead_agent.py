@@ -11,8 +11,7 @@ def agent(obs: connectx_game.Observation, config: connectx_game.Config) -> int:
     minimax = connectx_minimax.ConnectXMinimax(game)
     grid = np.asarray(obs.board).reshape(config.rows, config.columns)
     state = connectx_game.ConnectXState(grid, next_player=1)
-    scores, actions = minimax.argminimax(3, state, connectx_minimax.ConnectXScorer(config.inarow))
-    print(scores, actions)
+    scores, actions = minimax.argminimax(1, state, connectx_minimax.ConnectXScorer(config.inarow))
     shuf = list(range(len(scores)))
     random.shuffle(shuf)
     scores = [scores[s] for s in shuf]
