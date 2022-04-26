@@ -3,8 +3,10 @@ import random
 
 import numpy as np
 
-from connectx.tutorial.connectx_game import Observation, Config, ConnectXState, ConnectXGame, generate_windows, Mark
-from connectx.tutorial.minimax import argminimax, Scorer
+from connectx.tutorial.connectx_game import (
+    Observation, Config, ConnectXState, ConnectXAction, ConnectXGame, generate_windows, Mark
+)
+from connectx.tutorial.minimax import Minimax, Scorer
 
 
 class ConnectXScorer(Scorer[ConnectXState]):
@@ -38,11 +40,16 @@ class ConnectXScorer(Scorer[ConnectXState]):
         return score_grid(state.grid, mark, self.inarow)
 
 
+class ConnectXMinimax(Minimax[ConnectXGame, ConnectXState, ConnectXAction, ConnectXScorer]):
+    pass
+
+
 def agent(obs: Observation, config: Config) -> int:
     game = ConnectXGame(config)
+    minimax = ConnectXMinimax(game)
     grid = np.asarray(obs.board).reshape(config.rows, config.columns)
     state = ConnectXState(grid, next_player=1)
-    scores, actions = argminimax(game, 3, state, ConnectXScorer(config.inarow))
+    scores, actions = minimax.argminimax(3, state, ConnectXScorer(config.inarow))
     print(scores, actions)
     shuf = list(range(len(scores)))
     random.shuffle(shuf)

@@ -49,7 +49,7 @@ G = TypeVar("G", bound=Game)
 SC = TypeVar("SC", bound=Scorer)
 
 
-class Minimax(abc.ABC, Generic[G, S, SC]):
+class Minimax(abc.ABC, Generic[G, S, A, SC]):
     def __init__(self, game: G) -> None:
         self._game = game
 
@@ -68,7 +68,7 @@ class Minimax(abc.ABC, Generic[G, S, SC]):
             next_score = max(next_scores)
         return next_score
 
-    def argminimax(self, depth: int, state: S, scorer: SC) -> tuple[Sequence[float], Sequence[Action]]:
+    def argminimax(self, depth: int, state: S, scorer: SC) -> tuple[Sequence[float], Sequence[A]]:
         is_terminal, score = self._game.get_terminal_score(state)
         if is_terminal:
             raise RuntimeError
@@ -139,7 +139,7 @@ if __name__ == "__main__":
             }
             return x[state.i]
 
-    class ToyMinimax(Minimax[ToyGame, ToyState, ToyScorer]):
+    class ToyMinimax(Minimax[ToyGame, ToyState, ToyAction, ToyScorer]):
         pass
 
     minimax = ToyMinimax(ToyGame())

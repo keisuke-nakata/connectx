@@ -28,6 +28,8 @@ class Config:
 
 
 class ConnectXAction(Action):
+    col: int
+
     def __init__(self, col: int) -> None:
         self.col = col
 

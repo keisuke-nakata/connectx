@@ -24,30 +24,34 @@ def get_win_percentages(agent1: Agent, agent2: Agent, n_rounds: int = 100) -> No
 
 
 if __name__ == "__main__":
+    from pathlib import Path
+    outdir = Path("./out").resolve()
+    outdir.mkdir(exist_ok=True)
+
     # env = make("connectx", debug=True)
     # env.run([one_step_agent, "random"])
     # html = env.render(mode="html")
-    # with open("hoge.html", "w") as f:
+    # with open(outdir / "a.html", "w") as f:
     #     print(html, file=f)
     # get_win_percentages(one_step_agent, "random")
 
     # env = make("connectx", debug=True)
     # env.run([minimax_agent, "random"])
     # html = env.render(mode="html")
-    # with open("hoge.html", "w") as f:
+    # with open(outdir / "a.html", "w") as f:
     #     print(html, file=f)
     # get_win_percentages(minimax_agent, "random")
 
     env = make("connectx", debug=True)
     env.run([minimax_agent, one_step_agent])
     html = env.render(mode="html")
-    with open("hoge.html", "w") as f:
+    with open(outdir / outdir / "a.html", "w") as f:
         print(html, file=f)
     # get_win_percentages(minimax_agent, "random")
 
     # env = make("connectx", debug=True)
     # env.run([minimax_agent, minimax_agent])
     # html = env.render(mode="html")
-    # with open("hoge.html", "w") as f:
+    # with open("a.html", "w") as f:
     #     print(html, file=f)
     # get_win_percentages(minimax_agent, "random")
