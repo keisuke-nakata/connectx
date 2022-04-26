@@ -6,7 +6,6 @@
 	],
 	"settings": {
 		"python.defaultInterpreterPath": "/Users/keisuke.nakata/.pyenv/versions/3.9.12/envs/connectx/bin/python",
-		// "python.sortImports.path": "/Users/keisuke.nakata/.pyenv/versions/3.9.12/envs/connectx/bin/isort",
 		"python.linting.flake8Path": "/Users/keisuke.nakata/.pyenv/versions/3.9.12/envs/connectx/bin/flake8",
 		"python.linting.flake8Args": [
 			"--config=/Users/keisuke.nakata/Projects/kaggle/connectx/py/setup.cfg"
