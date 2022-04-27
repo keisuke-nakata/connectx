@@ -18,9 +18,9 @@ const revealFileFromEvent = (event: ChangeEvent<HTMLInputElement>) => {
     throw Error('file is null');
   }
   return file;
-}
+};
 
-export function TreeDataReader() {
+export const TreeDataReader = () => {
   const dispatch = useAppDispatch();
   const fileContent = useAppSelector(selectData);
 
@@ -30,4 +30,4 @@ export function TreeDataReader() {
         <p>{JSON.stringify(fileContent)}</p>
     </div>
   );
-}
+};

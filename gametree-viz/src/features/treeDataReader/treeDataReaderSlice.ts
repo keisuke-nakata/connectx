@@ -1,13 +1,23 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
+import { Node } from '../common/node';
+import { parseNode } from '../common/parseNode';
 
 export interface TreeDataReaderState {
-  data: object;
+  data: Node;
   status: 'idle' | 'loading' | 'failed';
 }
 
 const initialState: TreeDataReaderState = {
-  data: {},
+  data: {
+    id: 0,
+    repr: "node 0",
+    isTerminal: true,
+    score: null,
+    property: {},
+    parentEdge: null,
+    children: [],
+  },
   status: 'idle',
 };
 
@@ -23,14 +33,14 @@ const readFile = (file: File) => {
 
 const parseFile = async (file: File) => {
   const reader = await readFile(file);
-  return JSON.parse(reader.result as string);
-}
+  return parseNode(JSON.parse(reader.result as string));
+};
 
 export const readSingleFileAsync = createAsyncThunk(
   'treeDataReader/readFileFromInput',
   async (file: File) => {
-    const result = await parseFile(file);
-    return result
+    const rootNode = await parseFile(file) as Node;
+    return rootNode;
   }
 );
 
@@ -38,7 +48,7 @@ export const treeDataReaderSlice = createSlice({
   name: 'treeDataReader',
   initialState,
   reducers: {
-    setData: (state, action: PayloadAction<object>) => {
+    setData: (state, action: PayloadAction<Node>) => {
       console.log(action.payload);
       state.data = action.payload;
     },
