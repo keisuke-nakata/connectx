@@ -11,6 +11,8 @@ export const Node = t.iface([], {
   "score": t.union("number", "null"),
   "property": "object",
   "parentEdge": t.union(t.iface([], {
+    "id": "number",
+    "repr": "string",
     "turn": t.union(t.lit("player"), t.lit("opponent")),
     "property": "object",
   }), "null"),

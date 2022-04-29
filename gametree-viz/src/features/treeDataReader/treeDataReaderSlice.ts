@@ -1,7 +1,8 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 import { Node } from '../common/node';
-import { parseNode } from '../common/parseNode';
+import nodeTI from "../common/node-ti";
+import { CheckerT, createCheckers } from "ts-interface-checker";
 
 export interface TreeDataReaderState {
   data: Node;
@@ -21,6 +22,7 @@ const initialState: TreeDataReaderState = {
   status: 'idle',
 };
 
+const nodeChecker = createCheckers(nodeTI) as { Node: CheckerT<Node> };
 
 const readFile = (file: File) => {
   return new Promise<FileReader>((resolve, reject) => {
@@ -33,7 +35,14 @@ const readFile = (file: File) => {
 
 const parseFile = async (file: File) => {
   const reader = await readFile(file);
-  return parseNode(JSON.parse(reader.result as string));
+  const data = JSON.parse(reader.result as string);
+  try {
+    nodeChecker.Node.strictCheck(data);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+  return data as Node;
 };
 
 export const readSingleFileAsync = createAsyncThunk(
@@ -64,6 +73,7 @@ export const treeDataReaderSlice = createSlice({
       })
       .addCase(readSingleFileAsync.rejected, (state) => {
         state.status = 'failed';
+        state.data = initialState.data;
       });
   },
 });

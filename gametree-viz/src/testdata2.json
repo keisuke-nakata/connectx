@@ -1,0 +1,212 @@
+{
+  "id": 0,
+  "repr": "node 0",
+  "isTerminal": false,
+  "score": 10.0,
+  "property": {},
+  "parentEdge": null,
+  "children": [
+    {
+      "id": 1,
+      "repr": "node 1",
+      "isTerminal": false,
+      "score": -1.0,
+      "property": {},
+      "parentEdge": {
+        "id": 1,
+        "repr": "edge 1",
+        "turn": "player",
+        "property": {}
+      },
+      "children": [
+        {
+          "id": 3,
+          "repr": "node 3",
+          "isTerminal": false,
+          "score": 40.0,
+          "property": {},
+          "parentEdge": {
+            "id": 3,
+            "repr": "edge 3",
+            "turn": "opponent",
+            "property": {}
+          },
+          "children": [
+            {
+              "id": 7,
+              "repr": "node 7",
+              "isTerminal": true,
+              "score": 40.0,
+              "property": {},
+              "parentEdge": {
+                "id": 7,
+                "repr": "edge 7",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            },
+            {
+              "id": 8,
+              "repr": "node 8",
+              "isTerminal": true,
+              "score": 0.0,
+              "property": {},
+              "parentEdge": {
+                "id": 8,
+                "repr": "edge 8",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "repr": "node 4",
+          "isTerminal": false,
+          "score": -1.0,
+          "property": {},
+          "parentEdge": {
+            "id": 4,
+            "repr": "edge 4",
+            "turn": "opponent",
+            "property": {}
+          },
+          "children": [
+            {
+              "id": 9,
+              "repr": "node 9",
+              "isTerminal": true,
+              "score": -1.0,
+              "property": {},
+              "parentEdge": {
+                "id": 9,
+                "repr": "edge 9",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            },
+            {
+              "id": 10,
+              "repr": "node 10",
+              "isTerminal": true,
+              "score": -20.0,
+              "property": {},
+              "parentEdge": {
+                "id": 10,
+                "repr": "edge 10",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "repr": "node 2",
+      "isTerminal": false,
+      "score": 10.0,
+      "property": {},
+      "parentEdge": {
+        "id": 2,
+        "repr": "edge 2",
+        "turn": "player",
+        "property": {}
+      },
+      "children": [
+        {
+          "id": 5,
+          "repr": "node 5",
+          "isTerminal": false,
+          "score": 10.0,
+          "property": {},
+          "parentEdge": {
+            "id": 5,
+            "repr": "edge 5",
+            "turn": "opponent",
+            "property": {}
+          },
+          "children": [
+            {
+              "id": 11,
+              "repr": "node 11",
+              "isTerminal": true,
+              "score": 10.0,
+              "property": {},
+              "parentEdge": {
+                "id": 11,
+                "repr": "edge 11",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            },
+            {
+              "id": 12,
+              "repr": "node 12",
+              "isTerminal": true,
+              "score": -10.0,
+              "property": {},
+              "parentEdge": {
+                "id": 12,
+                "repr": "edge 12",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "repr": "node 6",
+          "isTerminal": false,
+          "score": 30.0,
+          "property": {},
+          "parentEdge": {
+            "id": 6,
+            "repr": "edge 6",
+            "turn": "opponent",
+            "property": {}
+          },
+          "children": [
+            {
+              "id": 13,
+              "repr": "node 13",
+              "isTerminal": true,
+              "score": -5.0,
+              "property": {},
+              "parentEdge": {
+                "id": 13,
+                "repr": "edge 13",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            },
+            {
+              "id": 14,
+              "repr": "node 14",
+              "isTerminal": true,
+              "score": 30.0,
+              "property": {},
+              "parentEdge": {
+                "id": 14,
+                "repr": "edge 14",
+                "turn": "player",
+                "property": {}
+              },
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
