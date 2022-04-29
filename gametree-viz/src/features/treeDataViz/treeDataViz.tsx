@@ -2,51 +2,51 @@ import * as go from 'gojs';
 import { ReactDiagram } from 'gojs-react';
 import styles from './treeDataViz.module.css';
 
-/**
- * Diagram initialization method, which is passed to the ReactDiagram component.
- * This method is responsible for making the diagram and initializing the model and any templates.
- * The model's data should not be set here, as the ReactDiagram component handles that via the other props.
- */
+
+const gojsStyles = {
+  Diagram: {
+    TreeLayout: { angle: 90, layerSpacing: 50 },
+  },
+  Node: {
+    Shape: { fill: "#1F4963", stroke: null },
+    TextBlock: { font: "bold 13px Helvetica, bold Arial, sans-serif", stroke: "white", margin: 3 },
+  },
+  Link: {
+    Shape: { strokeWidth: 1 },
+  },
+};
+
 function initDiagram() {
-  // set your license key here before creating the diagram: go.Diagram.licenseKey = "...";
-  const diagram = go.GraphObject.make(
-    go.Diagram,
+  const diagram = new go.Diagram(
     {
-      'undoManager.isEnabled': true,  // must be set to allow for model change listening
-      // 'undoManager.maxHistoryLength': 0,  // uncomment disable undo/redo functionality
-      'clickCreatingTool.archetypeNodeData': { text: 'new node', color: 'lightblue' },
-      model: new go.GraphLinksModel(
-        {
-          linkKeyProperty: 'key'  // IMPORTANT! must be defined for merges and data sync when using GraphLinksModel
-        })
+      initialAutoScale: go.Diagram.UniformToFill,
+      layout: new go.TreeLayout(gojsStyles.Diagram.TreeLayout),
+      model: new go.TreeModel({
+        isReadOnly: true, // don't allow the user to delete or copy nodes
+      }),
     }
   );
 
-  // define a simple Node template
-  diagram.nodeTemplate = go.GraphObject.make(
-    go.Node,
-    'Auto',  // the Shape will go around the TextBlock
-    new go.Binding('location', 'loc', go.Point.parse).makeTwoWay(go.Point.stringify),
-    go.GraphObject.make(go.Shape, 'RoundedRectangle',
-      { name: 'SHAPE', fill: 'white', strokeWidth: 0 },
-      // Shape.fill is bound to Node.data.color
-      new go.Binding('fill', 'color')),
-    go.GraphObject.make(go.TextBlock,
-      { margin: 8, editable: true },  // some room around the text
-      new go.Binding('text').makeTwoWay()
-    )
-  );
+  diagram.nodeTemplate = new go.Node("Vertical")
+    .add(new go.Panel("Table")
+      .add(new go.TextBlock({ row: 0, margin: new go.Margin(0 ,24, 0, 2) })
+        .bind("text", "key"))
+      .add(go.GraphObject.make("PanelExpanderButton", "CONTENT", { row: 0, alignment: go.Spot.TopRight }))
+      .add(new go.TextBlock({ name: "CONTENT", row: 1, visible: false })
+        .bind("text", "repr")))
+    .add(go.GraphObject.make("TreeExpanderButton"));
+
+  diagram.linkTemplate = new go.Link({ routing: go.Link.Orthogonal, selectable: false, corner: 10 })
+    .add(new go.Shape(gojsStyles.Link.Shape).bind("stroke", "edgeColor"))
+    .add(new go.TextBlock({ segmentIndex: -2, background: "white" })
+      .bind("text", "edgeRepr"));
 
   return diagram;
 }
 
-/**
- * This function handles any changes to the GoJS model.
- * It is here that you would make any updates to your React state, which is dicussed below.
- */
-function handleModelChange(changes: any) {
-  alert('GoJS model changed!');
-}
+// function handleModelChange(changes: any) {
+//   alert('GoJS model changed!');
+// }
 
 export const TreeDataViz = () => {
   return (
@@ -54,19 +54,14 @@ export const TreeDataViz = () => {
       initDiagram={initDiagram}
       divClassName={styles.diagramComponent}
       nodeDataArray={[
-        { key: 0, text: 'Alpha', color: 'lightblue', loc: '0 0' },
-        { key: 1, text: 'Beta', color: 'orange', loc: '150 0' },
-        { key: 2, text: 'Gamma', color: 'lightgreen', loc: '0 150' },
-        { key: 3, text: 'Delta', color: 'pink', loc: '150 150' }
+        { key: 0, repr: "node 0\nnode0\nnode0" },
+        { key: 1, parent: 0, repr: "node 1\nnode1\nnode1", edgeRepr: "edge 1", edgeTrun: "player", edgeColor: "DeepSkyBlue" },
+        { key: 2, parent: 0, repr: "node 2\nnode2\nnode2", edgeRepr: "edge 2", edgeTrun: "player", edgeColor: "DeepSkyBlue" },
+        { key: 3, parent: 2, repr: "node 3\nnode3\nnode3", edgeRepr: "edge 3", edgeTrun: "opponent", edgeColor: "red" },
+        { key: 4, parent: 2, repr: "node 4\nnode4\nnode4", edgeRepr: "edge 4", edgeTrun: "opponent", edgeColor: "red" },
+        { key: 5, parent: 2, repr: "node 5\nnode5\nnode5", edgeRepr: "edge 5", edgeTrun: "opponent", edgeColor: "red" },
       ]}
-      linkDataArray={[
-        { key: -1, from: 0, to: 1 },
-        { key: -2, from: 0, to: 2 },
-        { key: -3, from: 1, to: 1 },
-        { key: -4, from: 2, to: 3 },
-        { key: -5, from: 3, to: 0 }
-      ]}
-      onModelChange={handleModelChange}
+      // onModelChange={handleModelChange}
     />
   );
 };
