@@ -1,9 +1,8 @@
-import React, { ChangeEvent, useState } from 'react';
+import { ChangeEvent } from 'react';
 
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import {
   selectData,
-  setData,
   readSingleFileAsync,
 } from './treeDataReaderSlice';
 // import styles from './FileReader.module.css';
