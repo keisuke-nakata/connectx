@@ -1,6 +1,9 @@
 import * as go from 'gojs';
 import { ReactDiagram, DiagramProps } from 'gojs-react';
+import { useAppSelector } from '../../app/hooks';
+import { Node } from './node';
 import styles from './Tree.module.css';
+import { selectData } from './treeSlice';
 
 const GOJSSTYLES = {
   Diagram: {
@@ -45,21 +48,35 @@ const initDiagram = () => {
   return diagram;
 };
 
-// export const TreeViz = (nodeDataArray: DiagramProps["nodeDataArray"]) => {
+const nodeToArray = (node: Node, parentId: number | null) => {
+  const thisParentEdge = node.parentEdge ? {
+    parent: parentId,
+    edgeRepr: node.parentEdge.repr,
+    edgeTurn: node.parentEdge.turn,
+    edgeColor: node.parentEdge.turn === "player" ? "DeepSkyBlue" : "red",
+  } : {};
+  const thisNode: DiagramProps["nodeDataArray"] = [{
+    key: node.id,
+    repr: node.repr,
+    ...thisParentEdge,
+  }];
+  if (node.children.length > 0) {
+    const children = node.children.flatMap(child => nodeToArray(child, node.id));
+    thisNode.push(...children);
+  }
+  return thisNode
+};
+
 export const TreeViz = () => {
+  const rootNode = useAppSelector(selectData);
+  const nodeDataArray = nodeToArray(rootNode, null);
+  console.log(nodeDataArray);
+
   return (
     <ReactDiagram
       initDiagram={initDiagram}
       divClassName={styles.diagramComponent}
-      // nodeDataArray={nodeDataArray}
-      nodeDataArray={[
-        { key: 0, repr: "node 0\nnode0\nnode0" },
-        { key: 1, parent: 0, repr: "node 1\nnode1\nnode1", edgeRepr: "edge 1", edgeTrun: "player", edgeColor: "DeepSkyBlue" },
-        { key: 2, parent: 0, repr: "node 2\nnode2\nnode2", edgeRepr: "edge 2", edgeTrun: "player", edgeColor: "DeepSkyBlue" },
-        { key: 3, parent: 2, repr: "node 3\nnode3\nnode3", edgeRepr: "edge 3", edgeTrun: "opponent", edgeColor: "red" },
-        { key: 4, parent: 2, repr: "node 4\nnode4\nnode4", edgeRepr: "edge 4", edgeTrun: "opponent", edgeColor: "red" },
-        { key: 5, parent: 2, repr: "node 5\nnode5\nnode5", edgeRepr: "edge 5", edgeTrun: "opponent", edgeColor: "red" },
-      ]}
+      nodeDataArray={nodeDataArray}
     />
   );
 };
