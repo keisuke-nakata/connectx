@@ -5,13 +5,13 @@ import * as t from "ts-interface-checker";
 // tslint:disable:object-literal-key-quotes
 
 export const Node = t.iface([], {
-  "id": "number",
+  "id": "string",
   "repr": "string",
   "isTerminal": "boolean",
-  "score": t.union("number", "null"),
+  "score": "number",
   "property": "object",
   "parentEdge": t.union(t.iface([], {
-    "id": "number",
+    "id": "string",
     "repr": "string",
     "turn": t.union(t.lit("player"), t.lit("opponent")),
     "property": "object",

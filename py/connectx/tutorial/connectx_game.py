@@ -1,7 +1,8 @@
 from collections.abc import Sequence, Iterable, Callable
-from typing import Literal
+from typing import Any, Literal, Mapping
 import dataclasses
 import itertools
+import uuid
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
@@ -30,23 +31,45 @@ class Config:
 class ConnectXAction(minimax.Action):
     col: int
 
-    def __init__(self, col: int) -> None:
+    def __init__(self, col: int, turn: minimax.Turn) -> None:
         self.col = col
+        self._turn = turn
+
+        self._id = str(uuid.uuid1())
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    def __str__(self) -> str:
+        return f"col={self.col}"
+
+    @property
+    def turn(self) -> minimax.Turn:
+        return self._turn
+
+    @property
+    def property_(self) -> Mapping[str, Any]:
+        return {}
+
+    ###
+    # user-defined properties
+    ###
 
     def __hash__(self) -> int:
         return self.col
 
-    def __str__(self) -> str:
-        return f"ConnectXAction<col={self.col}>"
-
     def __repr__(self) -> str:
-        return str(self)
+        return f"ConnectXAction<col={self.col}>"
 
 
 class ConnectXState(minimax.State):
-    def __init__(self, grid: np.ndarray, next_player: Mark) -> None:
+    def __init__(self, grid: np.ndarray, next_player: Mark, step: int) -> None:
         self.grid = grid
         self.next_player = next_player
+        self.step = step
+
+        self._id = str(uuid.uuid1())
 
     @property
     def next_turn(self) -> minimax.Turn:
@@ -54,6 +77,17 @@ class ConnectXState(minimax.State):
             return minimax.Turn.PLAYER
         else:
             return minimax.Turn.OPPONENT
+
+    @property
+    def id(self) -> str:
+        return self._id
+
+    def __str__(self) -> str:
+        return "\n".join("".join(str(x) for x in row) for row in self.grid.tolist())
+
+    @property
+    def property_(self) -> Mapping[str, Any]:
+        return {}
 
 
 class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
@@ -64,7 +98,7 @@ class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
 
     def get_terminal_score(self, state: ConnectXState) -> tuple[bool, float]:
         """
-        state が最終状態 (それ以上手がない) であれば (True, score) を返す。
+        state が最終状態 (それ以上手がない) であれば (True, terminal_score) を返す。
         そうでない場合、(False, nan) を返す。
         """
         for window in generate_windows(state.grid, self.inarow):
@@ -77,7 +111,7 @@ class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
         return (False, float("nan"))
 
     def get_available_actions(self, state: ConnectXState) -> Sequence[ConnectXAction]:
-        return [ConnectXAction(c) for c in range(self.columns) if state.grid[0][c] == 0]
+        return [ConnectXAction(c, state.next_turn) for c in range(self.columns) if state.grid[0][c] == 0]
 
     def step(self, state: ConnectXState, action: ConnectXAction) -> ConnectXState:
         for row in reversed(range(self.rows)):
@@ -89,7 +123,7 @@ class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
         next_grid = state.grid.copy()
         next_grid[row, action.col] = state.next_player
         next_player: Literal[1, 2] = 1 if state.next_player == 2 else 2
-        return ConnectXState(next_grid, next_player)
+        return ConnectXState(next_grid, next_player, state.step + 1)
 
 
 def generate_horizontal_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:

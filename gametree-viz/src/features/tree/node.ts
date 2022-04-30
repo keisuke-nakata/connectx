@@ -1,11 +1,11 @@
 export interface Node {
-  id: number;
+  id: string;
   repr: string;
   isTerminal: boolean;
-  score: number | null;
+  score: number;
   property: object;
   parentEdge: { // ts-interface-checker は循環定義を扱えないのでここで edge を定義 https://github.com/gristlabs/ts-interface-checker/issues/60
-    id: number;
+    id: string;
     repr: string;
     turn: "player" | "opponent";
     property: object;

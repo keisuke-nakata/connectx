@@ -30,26 +30,26 @@ if __name__ == "__main__":
 
     env = make("connectx", debug=True)
 
-    env.run([one_step_lookahead_agent.agent, "random"])
-    html = env.render(mode="html")
-    with open(outdir / "a.html", "w") as f:
-        print(html, file=f)
-    # get_win_percentages(one_step_lookahead_agent.agent, "random")
-
-    # env.run([minimax_agent.agent, "random"])
+    # env.run([one_step_lookahead_agent.agent, "random"])
     # html = env.render(mode="html")
     # with open(outdir / "a.html", "w") as f:
     #     print(html, file=f)
-    # get_win_percentages(minimax_agent.agent, "random")
+    # get_win_percentages(one_step_lookahead_agent.agent, "random")
 
-    # env.run([minimax_agent.agent, one_step_lookahead_agent.agent])
+    env.run([minimax_agent.Agent(outdir), "random"])
+    html = env.render(mode="html")
+    with open(outdir / "a.html", "w") as f:
+        print(html, file=f)
+    # get_win_percentages(minimax_agent.Agent(outdir), "random")
+
+    # env.run([minimax_agent.Agent(outdir), one_step_lookahead_agent.agent])
     # html = env.render(mode="html")
     # with open(outdir / outdir / "a.html", "w") as f:
     #     print(html, file=f)
-    # get_win_percentages(minimax_agent.agent, one_step_lookahead_agent.agent)
+    # get_win_percentages(minimax_agent.Agent(outdir), one_step_lookahead_agent.agent)
 
-    # env.run([minimax_agent.agent, minimax_agent.agent])
+    # env.run([minimax_agent.Agent(outdir), minimax_agent.Agent(outdir)])
     # html = env.render(mode="html")
     # with open("a.html", "w") as f:
     #     print(html, file=f)
-    # get_win_percentages(minimax_agent.agent, "random")
+    # get_win_percentages(minimax_agent.Agent(outdir) "random")

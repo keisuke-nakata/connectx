@@ -13,10 +13,10 @@ interface TreeState {
 
 const initialState: TreeState = {
   data: {
-    id: 0,
+    id: "0",
     repr: "node 0",
     isTerminal: true,
-    score: null,
+    score: NaN,
     property: {},
     parentEdge: null,
     children: [],

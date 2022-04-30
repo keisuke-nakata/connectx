@@ -1,5 +1,3 @@
-from typing import Literal
-
 import numpy as np
 
 from connectx.tutorial import connectx_game, minimax
@@ -32,8 +30,7 @@ class ConnectXScorer(minimax.Scorer[connectx_game.ConnectXState]):
                 score += _score_window(window, mark, inarow)
             return score
 
-        mark: Literal[1, 2] = 2 if state.is_opponent_turn else 1
-        return score_grid(state.grid, mark, self.inarow)
+        return score_grid(state.grid, state.next_player, self.inarow)
 
 
 class ConnectXMinimax(

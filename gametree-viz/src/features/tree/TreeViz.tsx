@@ -50,7 +50,7 @@ const initDiagram = () => {
   return diagram;
 };
 
-const nodeToArray = (node: Node, parentId: number | null) => {
+const nodeToArray = (node: Node, parentId: string | null) => {
   const thisParentEdge = node.parentEdge ? {
     parent: parentId,
     edgeRepr: node.parentEdge.repr,
