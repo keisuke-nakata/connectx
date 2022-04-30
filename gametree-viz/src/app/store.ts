@@ -1,6 +1,6 @@
 import { configureStore, ThunkAction, Action } from '@reduxjs/toolkit';
 import counterReducer from '../features/counter/counterSlice';
-import treeDataReaderRecuder from '../features/treeDataReader/treeDataReaderSlice';
+import treeDataReaderRecuder from '../features/tree/treeDataReaderSlice';
 
 export const store = configureStore({
   reducer: {

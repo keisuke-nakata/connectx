@@ -1,6 +1,6 @@
 import * as go from 'gojs';
-import { ReactDiagram } from 'gojs-react';
-import styles from './treeDataViz.module.css';
+import { ReactDiagram, DiagramProps } from 'gojs-react';
+import styles from './Tree.module.css';
 
 
 const GOJSSTYLES = {
@@ -46,11 +46,13 @@ function initDiagram() {
   return diagram;
 }
 
-export const TreeDataViz = () => {
+// export const TreeViz = (nodeDataArray: DiagramProps["nodeDataArray"]) => {
+export const TreeViz = () => {
   return (
     <ReactDiagram
       initDiagram={initDiagram}
       divClassName={styles.diagramComponent}
+      // nodeDataArray={nodeDataArray}
       nodeDataArray={[
         { key: 0, repr: "node 0\nnode0\nnode0" },
         { key: 1, parent: 0, repr: "node 1\nnode1\nnode1", edgeRepr: "edge 1", edgeTrun: "player", edgeColor: "DeepSkyBlue" },

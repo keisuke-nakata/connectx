@@ -1,8 +1,8 @@
 import React from 'react';
 import logo from './logo.svg';
 import { Counter } from './features/counter/Counter';
-import { TreeDataReader } from './features/treeDataReader/treeDataReader';
-import { TreeDataViz } from './features/treeDataViz/treeDataViz';
+import { TreeDataReader } from './features/tree/TreeDataReader';
+import { TreeViz } from './features/tree/TreeViz';
 import './App.css';
 
 function App() {
@@ -10,7 +10,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img src={logo} className="App-logo" alt="logo" />
-        <TreeDataViz />
+        <TreeViz />
         <TreeDataReader />
         <Counter />
         <p>
