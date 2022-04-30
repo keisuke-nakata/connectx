@@ -3,10 +3,12 @@ import { RootState } from '../../app/store';
 import { Node } from './node';
 import nodeTI from "./node-ti";
 import { CheckerT, createCheckers } from "ts-interface-checker";
+import { ChangeEvent } from 'react';
 
 interface TreeState {
   data: Node;
   status: 'idle' | 'loading' | 'failed';
+  readMsg: string;
 }
 
 const initialState: TreeState = {
@@ -20,6 +22,7 @@ const initialState: TreeState = {
     children: [],
   },
   status: 'idle',
+  readMsg: '',
 };
 
 const nodeChecker = createCheckers(nodeTI) as { Node: CheckerT<Node> };
@@ -39,7 +42,6 @@ const parseFile = async (file: File) => {
   try {
     nodeChecker.Node.strictCheck(data);
   } catch (error) {
-    console.error(error);
     throw error;
   }
   return data as Node;
@@ -47,7 +49,14 @@ const parseFile = async (file: File) => {
 
 export const readSingleFileAsync = createAsyncThunk(
   'tree/readFileFromInput',
-  async (file: File) => {
+  async (event: ChangeEvent<HTMLInputElement>) => {
+    if (!event.target.files) {
+      throw Error('event.target.files is null');
+    }
+    const file = event.target.files[0];
+    if (!file) {
+      throw Error('file is null');
+    }
     const rootNode = await parseFile(file) as Node;
     return rootNode;
   }
@@ -66,14 +75,23 @@ export const treeSlice = createSlice({
     builder
       .addCase(readSingleFileAsync.pending, (state) => {
         state.status = 'loading';
+        state.readMsg = 'loading';
       })
       .addCase(readSingleFileAsync.fulfilled, (state, action) => {
         state.status = 'idle';
         state.data = action.payload;
+        state.readMsg = '';
       })
-      .addCase(readSingleFileAsync.rejected, (state) => {
+      .addCase(readSingleFileAsync.rejected, (state, action) => {
         state.status = 'failed';
         state.data = initialState.data;
+        const readMsg =
+          (action.error.name ?? "UnknownError")
+          + ": "
+          + (action.error.message ?? "")
+          + " "
+          + (action.error.code ?? "");
+        state.readMsg = readMsg;
       });
   },
 });
@@ -81,5 +99,6 @@ export const treeSlice = createSlice({
 export const { setData } = treeSlice.actions;
 
 export const selectData = (state: RootState) => state.tree.data;
+export const selectReadMsg = (state: RootState) => state.tree.readMsg;
 
 export default treeSlice.reducer;
