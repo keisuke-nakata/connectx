@@ -7,7 +7,6 @@ import {
 } from './treeSlice';
 // import styles from './FileReader.module.css';
 
-
 const revealFileFromEvent = (event: ChangeEvent<HTMLInputElement>) => {
   if (!event.target.files) {
     throw Error('event.target.files is null');

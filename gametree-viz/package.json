@@ -26,7 +26,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "gen-typeguard": "ts-interface-builder src/features/common/node.ts src/features/common/foo.ts"
+    "gen-typeguard": "ts-interface-builder src/features/tree/node.ts"
   },
   "eslintConfig": {
     "extends": [

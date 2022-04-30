@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
-import { Node } from '../common/node';
-import nodeTI from "../common/node-ti";
+import { Node } from './node';
+import nodeTI from "./node-ti";
 import { CheckerT, createCheckers } from "ts-interface-checker";
 
 interface TreeState {

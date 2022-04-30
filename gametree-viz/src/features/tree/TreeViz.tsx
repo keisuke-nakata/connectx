@@ -2,7 +2,6 @@ import * as go from 'gojs';
 import { ReactDiagram, DiagramProps } from 'gojs-react';
 import styles from './Tree.module.css';
 
-
 const GOJSSTYLES = {
   Diagram: {
     initialAutoScale: go.Diagram.UniformToFill,
@@ -25,7 +24,7 @@ const GOJSSTYLES = {
   },
 };
 
-function initDiagram() {
+const initDiagram = () => {
   const diagram = new go.Diagram(GOJSSTYLES.Diagram);
 
   diagram.nodeTemplate = new go.Node("Vertical")
@@ -44,7 +43,7 @@ function initDiagram() {
       .bind("text", "edgeRepr"));
 
   return diagram;
-}
+};
 
 // export const TreeViz = (nodeDataArray: DiagramProps["nodeDataArray"]) => {
 export const TreeViz = () => {
