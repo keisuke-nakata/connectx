@@ -32,8 +32,10 @@ const initDiagram = () => {
 
   diagram.nodeTemplate = new go.Node("Vertical")
     .add(new go.Panel("Table")
+      // .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header)
+      //   .bind("text", "key"))
       .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header)
-        .bind("text", "key"))
+        .bind("text", "score"))
       .add(go.GraphObject.make("PanelExpanderButton", "CONTENT", GOJSSTYLES.Node.Table.ExpanderButton))
       .add(new go.TextBlock({ name: "CONTENT", ...GOJSSTYLES.Node.Table.Content})
         .bind("text", "repr")))
@@ -58,19 +60,19 @@ const nodeToArray = (node: Node, parentId: number | null) => {
   const thisNode: DiagramProps["nodeDataArray"] = [{
     key: node.id,
     repr: node.repr,
+    score: node.score,
     ...thisParentEdge,
   }];
   if (node.children.length > 0) {
     const children = node.children.flatMap(child => nodeToArray(child, node.id));
     thisNode.push(...children);
   }
-  return thisNode
+  return thisNode;
 };
 
 export const TreeViz = () => {
   const rootNode = useAppSelector(selectData);
   const nodeDataArray = nodeToArray(rootNode, null);
-  console.log(nodeDataArray);
 
   return (
     <ReactDiagram
