@@ -4,7 +4,7 @@ import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import {
   selectData,
   readSingleFileAsync,
-} from './treeDataReaderSlice';
+} from './treeSlice';
 // import styles from './FileReader.module.css';
 
 

@@ -4,12 +4,12 @@ import { Node } from '../common/node';
 import nodeTI from "../common/node-ti";
 import { CheckerT, createCheckers } from "ts-interface-checker";
 
-export interface TreeDataReaderState {
+interface TreeState {
   data: Node;
   status: 'idle' | 'loading' | 'failed';
 }
 
-const initialState: TreeDataReaderState = {
+const initialState: TreeState = {
   data: {
     id: 0,
     repr: "node 0",
@@ -46,15 +46,15 @@ const parseFile = async (file: File) => {
 };
 
 export const readSingleFileAsync = createAsyncThunk(
-  'treeDataReader/readFileFromInput',
+  'tree/readFileFromInput',
   async (file: File) => {
     const rootNode = await parseFile(file) as Node;
     return rootNode;
   }
 );
 
-export const treeDataReaderSlice = createSlice({
-  name: 'treeDataReader',
+export const treeSlice = createSlice({
+  name: 'tree',
   initialState,
   reducers: {
     setData: (state, action: PayloadAction<Node>) => {
@@ -78,8 +78,8 @@ export const treeDataReaderSlice = createSlice({
   },
 });
 
-export const { setData } = treeDataReaderSlice.actions;
+export const { setData } = treeSlice.actions;
 
-export const selectData = (state: RootState) => state.treeDataReader.data;
+export const selectData = (state: RootState) => state.tree.data;
 
-export default treeDataReaderSlice.reducer;
+export default treeSlice.reducer;
