@@ -1,5 +1,5 @@
 from collections.abc import Sequence, Iterable, Callable
-from typing import Any, Literal, Mapping
+from typing import Literal
 import dataclasses
 import itertools
 import uuid
@@ -48,10 +48,6 @@ class ConnectXAction(minimax.Action):
     def turn(self) -> minimax.Turn:
         return self._turn
 
-    @property
-    def property_(self) -> Mapping[str, Any]:
-        return {}
-
     ###
     # user-defined properties
     ###
@@ -84,10 +80,6 @@ class ConnectXState(minimax.State):
 
     def __str__(self) -> str:
         return "\n".join("".join(str(x) for x in row) for row in self.grid.tolist())
-
-    @property
-    def property_(self) -> Mapping[str, Any]:
-        return {}
 
 
 class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):

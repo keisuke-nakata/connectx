@@ -15,14 +15,14 @@ const GOJSSTYLES = {
   },
   Node: {
     Table: {
-      Header: { row: 0, margin: new go.Margin(0, 24, 0, 2) },  // 展開ボタンのための余裕しろ
-      ExpanderButton: { row: 0, alignment: go.Spot.TopRight },
-      Content: { row: 1, visible: false },
+      Header0: { row: 0 },
+      Header1: { row: 1, margin: new go.Margin(0, 24, 0, 2) },  // 展開ボタンのための余裕しろ
+      ExpanderButton: { row: 1, alignment: go.Spot.TopRight },
+      Content: { row: 2, font: "16px monospace" },
     },
   },
   Link: {
     Link: { routing: go.Link.Orthogonal, selectable: false, corner: 10 },
-    Shape: { strokeWidth: 1 },
     TextBlock: { segmentIndex: -2, background: "white" },
   },
 };
@@ -30,20 +30,22 @@ const GOJSSTYLES = {
 const initDiagram = () => {
   const diagram = new go.Diagram(GOJSSTYLES.Diagram);
 
-  diagram.nodeTemplate = new go.Node("Vertical")
+  diagram.nodeTemplate = new go.Node("Vertical").bind("isTreeExpanded", "isRational")
     .add(new go.Panel("Table")
-      // .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header)
-      //   .bind("text", "key"))
-      .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header)
-        .bind("text", "score"))
+      .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header0)
+        .bind("text", "isTerminal", (isTerminal) => "terminal: " + isTerminal)
+        .bind("stroke", "isTerminal", (isTerminal) => isTerminal ? "black" : "gray"))
+      .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header1)
+        .bind("text", "score", (score) => "score: " + score))
       .add(go.GraphObject.make("PanelExpanderButton", "CONTENT", GOJSSTYLES.Node.Table.ExpanderButton))
       .add(new go.TextBlock({ name: "CONTENT", ...GOJSSTYLES.Node.Table.Content})
         .bind("text", "repr")))
     .add(go.GraphObject.make("TreeExpanderButton"));
 
   diagram.linkTemplate = new go.Link(GOJSSTYLES.Link.Link)
-    .add(new go.Shape(GOJSSTYLES.Link.Shape)
-      .bind("stroke", "edgeColor"))
+    .add(new go.Shape()
+      .bind("stroke", "edgeColor")
+      .bind("strokeWidth", "edgeIsRational", (edgeIsRational) => edgeIsRational ? 5 : 1))
     .add(new go.TextBlock(GOJSSTYLES.Link.TextBlock)
       .bind("text", "edgeRepr"));
 
@@ -56,11 +58,14 @@ const nodeToArray = (node: Node, parentId: string | null) => {
     edgeRepr: node.parentEdge.repr,
     edgeTurn: node.parentEdge.turn,
     edgeColor: node.parentEdge.turn === "player" ? "DeepSkyBlue" : "red",
+    edgeIsRational: node.parentEdge.isRational,
   } : {};
   const thisNode: DiagramProps["nodeDataArray"] = [{
     key: node.id,
     repr: node.repr,
+    isTerminal: node.isTerminal,
     score: node.score,
+    isRational: node.isRational,
     ...thisParentEdge,
   }];
   if (node.children.length > 0) {

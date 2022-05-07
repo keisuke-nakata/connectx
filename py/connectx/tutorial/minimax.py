@@ -3,6 +3,8 @@ import enum
 from collections.abc import Mapping, Sequence
 from typing import Any, Generic, Optional, TypeVar
 
+import numpy as np
+
 
 class Turn(enum.Enum):
     PLAYER = enum.auto()
@@ -23,10 +25,6 @@ class State(abc.ABC):
     def __str__(self) -> str:
         pass
 
-    @abc.abstractproperty
-    def property_(self) -> Mapping[str, Any]:
-        pass
-
 
 class Action(abc.ABC):
     @abc.abstractproperty
@@ -42,10 +40,6 @@ class Action(abc.ABC):
     def turn(self) -> Turn:
         pass
 
-    @abc.abstractproperty
-    def property_(self) -> Mapping[str, Any]:
-        pass
-
 
 S = TypeVar("S", bound=State)
 A = TypeVar("A", bound=Action)
@@ -55,16 +49,26 @@ class Edge(Generic[A]):
     def __init__(self, action: A) -> None:
         self._action = action
 
+        self.is_rational = False
+
     @property
     def action(self) -> A:
         return self._action
+
+    @property
+    def is_rational(self) -> bool:
+        return self._is_rational
+
+    @is_rational.setter
+    def is_rational(self, is_rational: bool) -> None:
+        self._is_rational = is_rational
 
     def to_dict(self) -> Mapping[str, Any]:
         return {
             "id": self.action.id,
             "repr": str(self.action),
             "turn": self.action.turn.name.lower(),
-            "property": self.action.property_,
+            "isRational": self.is_rational,
         }
 
 
@@ -78,6 +82,8 @@ class Node(Generic[S, A]):
         self._parent_edge = parent_edge
         self._children = children
 
+        self.is_rational = False
+
     @property
     def state(self) -> S:
         return self._state
@@ -89,6 +95,14 @@ class Node(Generic[S, A]):
     @property
     def score(self) -> float:
         return self._score
+
+    @property
+    def is_rational(self) -> bool:
+        return self._is_rational
+
+    @is_rational.setter
+    def is_rational(self, is_rational: bool) -> None:
+        self._is_rational = is_rational
 
     @property
     def parent_edge(self) -> Optional[Edge[A]]:
@@ -104,7 +118,7 @@ class Node(Generic[S, A]):
             "repr": str(self.state),
             "isTerminal": self.is_terminal,
             "score": self.score,
-            "property": self.state.property_,
+            "isRational": self.is_rational,
             "parentEdge": None if self.parent_edge is None else self.parent_edge.to_dict(),
             "children": [node.to_dict() for node in self.children],
         }
@@ -149,6 +163,11 @@ class Minimax(abc.ABC, Generic[G, S, A, SC]):
         self._scorer = scorer
 
     def __call__(self, depth: int, state: S, parent_edge: Optional[Edge[A]] = None) -> Node[S, A]:
+        root_node = self._call_core(depth, state, parent_edge)
+        self._mark_rational(root_node)
+        return root_node
+
+    def _call_core(self, depth: int, state: S, parent_edge: Optional[Edge[A]] = None) -> Node[S, A]:
         is_terminal, terminal_score = self._game.get_terminal_score(state)
         if is_terminal:
             return Node[S, A](state=state, is_terminal=True, score=terminal_score, parent_edge=parent_edge, children=[])
@@ -157,10 +176,23 @@ class Minimax(abc.ABC, Generic[G, S, A, SC]):
             return Node[S, A](state=state, is_terminal=False, score=score, parent_edge=parent_edge, children=[])
         available_actions = self._game.get_available_actions(state)
         next_states = ((self._game.step(state, action), Edge[A](action)) for action in available_actions)
-        next_nodes = [self.__call__(depth - 1, next_state, edge) for next_state, edge in next_states]
-        aggregater = min if state.next_turn == Turn.OPPONENT else max
-        score = aggregater(node.score for node in next_nodes)
+        next_nodes = [self._call_core(depth - 1, next_state, edge) for next_state, edge in next_states]
+        aggregator = min if state.next_turn == Turn.OPPONENT else max
+        score = aggregator(node.score for node in next_nodes)
         return Node[S, A](state=state, is_terminal=False, score=score, parent_edge=parent_edge, children=next_nodes)
+
+    def _mark_rational(self, node: Node[S, A]) -> None:
+        node.is_rational = True
+        if node.parent_edge is not None:
+            node.parent_edge.is_rational = True
+
+        if node.is_terminal or len(node.children) == 0:
+            return
+
+        next_scores = [child.score for child in node.children]
+        aggregator = np.argmin if node.state.next_turn == Turn.OPPONENT else np.argmax
+        rational_node = node.children[int(aggregator(next_scores))]
+        self._mark_rational(rational_node)
 
 
 if __name__ == "__main__":
@@ -183,10 +215,6 @@ if __name__ == "__main__":
         def __str__(self) -> str:
             return f"Node #{self.i}"
 
-        @property
-        def property_(self) -> Mapping[str, Any]:
-            return {}
-
     class ToyAction(Action):
         def __init__(self, to: int) -> None:
             self.to = to
@@ -204,10 +232,6 @@ if __name__ == "__main__":
                 return Turn.PLAYER
             else:
                 return Turn.OPPONENT
-
-        @property
-        def property_(self) -> Mapping[str, Any]:
-            return {}
 
     class ToyGame(Game[ToyState, ToyAction]):
         def get_terminal_score(self, state: ToyState) -> tuple[bool, float]:

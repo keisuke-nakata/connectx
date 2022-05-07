@@ -9,12 +9,12 @@ export const Node = t.iface([], {
   "repr": "string",
   "isTerminal": "boolean",
   "score": "number",
-  "property": "object",
+  "isRational": "boolean",
   "parentEdge": t.union(t.iface([], {
     "id": "string",
     "repr": "string",
     "turn": t.union(t.lit("player"), t.lit("opponent")),
-    "property": "object",
+    "isRational": "boolean",
   }), "null"),
   "children": t.array("Node"),
 });

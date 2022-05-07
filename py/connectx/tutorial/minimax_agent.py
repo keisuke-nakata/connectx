@@ -1,9 +1,7 @@
-import abc
 import json
-from logging import root
 from pathlib import Path
 import random
-from typing import Generic, Optional
+from typing import Optional
 from connectx.tutorial.minimax import Node
 
 import numpy as np
@@ -11,8 +9,6 @@ import numpy as np
 from connectx.tutorial import connectx_game
 from connectx.tutorial import connectx_minimax
 
-
-# class Agent(abc.ABC, Generic[S
 
 class Agent:
     _game: Optional[connectx_game.ConnectXGame]
@@ -58,21 +54,3 @@ class Agent:
         dumpdir.mkdir(exist_ok=True)
         with open(dumpdir / f"{str(root_node.state.step)}.json", "w") as f:
             json.dump(root_node.to_dict(), f)
-
-
-# def agent(obs: connectx_game.Observation, config: connectx_game.Config) -> int:
-#     game = connectx_game.ConnectXGame(config.columns, config.rows, config.inarow)
-#     scorer = connectx_minimax.ConnectXScorer(config.inarow)
-#     minimax = connectx_minimax.ConnectXMinimax(game, scorer)
-
-#     grid = np.asarray(obs.board).reshape(config.rows, config.columns)
-#     state = connectx_game.ConnectXState(grid, next_player=1)
-#     root_node = minimax(3, state)
-
-#     shuf = list(range(len(root_node.children)))
-#     random.shuffle(shuf)
-#     r_children = [root_node.children[s] for s in shuf]
-#     scores = [node.score for node in r_children]
-#     actions = [node.parent_edge.action for node in r_children if node.parent_edge is not None]
-#     assert len(scores) == len(actions)
-#     return actions[np.argmax(scores)].col

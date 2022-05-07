@@ -17,7 +17,7 @@ const initialState: TreeState = {
     repr: "node 0",
     isTerminal: true,
     score: NaN,
-    property: {},
+    isRational: true,
     parentEdge: null,
     children: [],
   },
