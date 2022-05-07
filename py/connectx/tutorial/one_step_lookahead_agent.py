@@ -3,15 +3,15 @@ import random
 import numpy as np
 
 from connectx.tutorial import connectx_game
-from connectx.tutorial import connectx_minimax
+from connectx.tutorial import connectx_solver
 
 
 def agent(obs: connectx_game.Observation, config: connectx_game.Config) -> int:
     game = connectx_game.ConnectXGame(config.columns, config.rows, config.inarow)
-    minimax = connectx_minimax.ConnectXMinimax(game)
+    minimax = connectx_solver.ConnectXMinimax(game)
     grid = np.asarray(obs.board).reshape(config.rows, config.columns)
     state = connectx_game.ConnectXState(grid, next_player=1)
-    scores, actions = minimax.argminimax(1, state, connectx_minimax.ConnectXScorer(config.inarow))
+    scores, actions = minimax.argminimax(1, state, connectx_solver.ConnectXScorer(config.inarow))
     shuf = list(range(len(scores)))
     random.shuffle(shuf)
     scores = [scores[s] for s in shuf]

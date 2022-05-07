@@ -7,13 +7,13 @@ from connectx.tutorial.minimax import Node
 import numpy as np
 
 from connectx.tutorial import connectx_game
-from connectx.tutorial import connectx_minimax
+from connectx.tutorial import connectx_solver
 
 
 class Agent:
     _game: Optional[connectx_game.ConnectXGame]
-    _scorer: Optional[connectx_minimax.ConnectXScorer]
-    _minimax: Optional[connectx_minimax.ConnectXMinimax]
+    _scorer: Optional[connectx_solver.ConnectXScorer]
+    _minimax: Optional[connectx_solver.ConnectXMinimax]
 
     def __init__(self, outdir: Path) -> None:
         self._outdir = outdir
@@ -40,8 +40,8 @@ class Agent:
     def __call__(self, obs: connectx_game.Observation, config: connectx_game.Config) -> int:
         if (self._game is None) or (self._scorer is None) or (self._minimax is None):
             self._game = connectx_game.ConnectXGame(config.columns, config.rows, config.inarow)
-            self._scorer = connectx_minimax.ConnectXScorer(config.inarow)
-            self._minimax = connectx_minimax.ConnectXMinimax(self._game, self._scorer)
+            self._scorer = connectx_solver.ConnectXScorer(config.inarow)
+            self._minimax = connectx_solver.ConnectXMinimax(self._game, self._scorer)
 
         grid = np.asarray(obs.board).reshape(config.rows, config.columns)
         state = connectx_game.ConnectXState(grid, next_player=1, step=obs.step)
