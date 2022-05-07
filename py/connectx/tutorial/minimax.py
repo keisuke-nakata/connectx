@@ -156,8 +156,7 @@ G = TypeVar("G", bound=Game)
 SC = TypeVar("SC", bound=Scorer)
 
 
-# TODO: abc.ABC を削除
-class Minimax(abc.ABC, Generic[G, S, A, SC]):
+class Minimax(Generic[G, S, A, SC]):
     def __init__(self, game: G, scorer: SC) -> None:
         self._game = game
         self._scorer = scorer
@@ -278,10 +277,7 @@ if __name__ == "__main__":
             }
             return x[state.i]
 
-    class ToyMinimax(Minimax[ToyGame, ToyState, ToyAction, ToyScorer]):
-        pass
-
-    minimax = ToyMinimax(ToyGame(), ToyScorer())
+    minimax = Minimax[ToyGame, ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer())
     root_node = minimax(depth=3, state=ToyState(0))
 
     from pathlib import Path
