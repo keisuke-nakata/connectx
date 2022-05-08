@@ -1,5 +1,4 @@
-from collections.abc import Callable
-from typing import Union
+from typing import Union, Callable
 
 import numpy as np
 from kaggle_environments import make, evaluate

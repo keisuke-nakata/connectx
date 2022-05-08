@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+from typing import Iterable, Callable, Sequence
+
 import dataclasses
 import itertools
 import uuid
-from collections.abc import Callable, Iterable, Sequence
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
@@ -103,20 +104,25 @@ class ConnectXGame(game.Game[ConnectXState, ConnectXAction]):
             return (True, 0)
         return (False, float("nan"))
 
-    def get_available_actions(self, state: ConnectXState) -> Sequence[ConnectXAction]:
+    def get_available_actions(self, state: ConnectXState) -> list[ConnectXAction]:
         return [ConnectXAction(c, state.next_turn) for c in range(self.columns) if state.grid[0][c] == 0]
 
     def step(self, state: ConnectXState, action: ConnectXAction) -> ConnectXState:
-        for row in reversed(range(self.rows)):
-            if state.grid[row, action.col] == 0:
-                break
-        else:
-            raise RuntimeError("Invalid action")
+        row = get_playable_row(state.grid[:, action.col])
 
         next_grid = state.grid.copy()
         next_grid[row, action.col] = state.next_player
         next_player: Literal[1, 2] = 1 if state.next_player == 2 else 2
         return ConnectXState(next_grid, next_player, state.step + 1)
+
+
+def get_playable_row(col: np.ndarray) -> int:
+    for row in reversed(range(len(col))):
+        if col[row] == 0:
+            break
+    else:
+        raise RuntimeError("Not playable")
+    return row
 
 
 def generate_horizontal_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
@@ -141,7 +147,7 @@ def generate_negative_diagonal_windows(grid: np.ndarray, inarow: int) -> Iterabl
     diags = (grid_flipped.diagonal(diag_idx) for diag_idx in range(-nrow + 1, ncol))
     return itertools.chain.from_iterable(
         sliding_window_view(diag, inarow) for diag in diags if len(diag) >= inarow  # type: ignore
-    )  # type: ignore
+    )
 
 
 def generate_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:

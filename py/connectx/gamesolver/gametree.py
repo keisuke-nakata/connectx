@@ -1,6 +1,7 @@
+from __future__ import annotations
+
 import abc
-from collections.abc import Mapping, Sequence
-from typing import Any, Generic, Optional, TypeVar
+from typing import Any, Generic, Optional, TypeVar, Sequence
 
 from connectx.gamesolver import game
 
@@ -23,7 +24,7 @@ class Edge(Generic[game.A]):
     def is_rational(self, is_rational: bool) -> None:
         self._is_rational = is_rational
 
-    def to_dict(self) -> Mapping[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.action.id,
             "repr": str(self.action),
@@ -77,7 +78,7 @@ class Node(Generic[game.S, game.A]):
     def children(self) -> Sequence["Node[game.S, game.A]"]:
         return self._children
 
-    def to_dict(self) -> Mapping[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "id": self.state.id,
             "repr": str(self.state),

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import abc
 import enum
-from collections.abc import Sequence
 from typing import Generic, TypeVar
 
 
@@ -59,7 +58,7 @@ class Game(abc.ABC, Generic[S, A]):
         pass
 
     @abc.abstractmethod
-    def get_available_actions(self, state: S) -> Sequence[A]:
+    def get_available_actions(self, state: S) -> list[A]:
         pass
 
     @abc.abstractmethod

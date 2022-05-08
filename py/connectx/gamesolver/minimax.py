@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from collections.abc import Sequence
 from typing import Generic, Optional
 
 import numpy as np
@@ -115,7 +114,7 @@ if __name__ == "__main__":
             )
             return x[state.i]
 
-        def get_available_actions(self, state: ToyState) -> Sequence[ToyAction]:
+        def get_available_actions(self, state: ToyState) -> list[ToyAction]:
             if state.i >= 7:
                 return []
             return [ToyAction(x) for x in (state.i * 2 + 1, state.i * 2 + 2)]
