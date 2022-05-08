@@ -1,13 +1,11 @@
 import json
-from pathlib import Path
 import random
+from pathlib import Path
 from typing import Optional
-from connectx.tutorial.minimax import Node
 
 import numpy as np
 
-from connectx.tutorial import connectx_game
-from connectx.tutorial import connectx_solver
+from connectx.tutorial import connectx_game, connectx_solver, minimax
 
 
 class Agent:
@@ -49,7 +47,9 @@ class Agent:
         best_action = self._call_core(state)
         return best_action.col
 
-    def _dump_gametree(self, root_node: Node[connectx_game.ConnectXState, connectx_game.ConnectXAction]) -> None:
+    def _dump_gametree(
+        self, root_node: minimax.Node[connectx_game.ConnectXState, connectx_game.ConnectXAction]
+    ) -> None:
         if self._outdir is None:
             return
         dumpdir = self._outdir / "tree"

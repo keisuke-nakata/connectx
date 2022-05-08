@@ -3,5 +3,5 @@ flake8==4.0.1
 isort==5.10.1
 kaggle-environments==1.9.9
 mypy==0.942
-numpy==1.22.3
+numpy==1.21.6
 pysen==0.10.1

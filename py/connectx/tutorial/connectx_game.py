@@ -1,14 +1,15 @@
-from collections.abc import Sequence, Iterable, Callable
-from typing import Literal
+from __future__ import annotations
+
 import dataclasses
 import itertools
 import uuid
+from collections.abc import Callable, Iterable, Sequence
 
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
+from typing_extensions import Literal
 
 from connectx.tutorial import minimax
-
 
 Mark = Literal[1, 2]  # 1: player, 2: opponent
 
@@ -119,24 +120,28 @@ class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
 
 
 def generate_horizontal_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
-    return itertools.chain.from_iterable(sliding_window_view(row, inarow) for row in grid)
+    return itertools.chain.from_iterable(sliding_window_view(row, inarow) for row in grid)  # type: ignore
 
 
 def generate_vertical_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
-    return itertools.chain.from_iterable(sliding_window_view(col, inarow) for col in grid.T)
+    return itertools.chain.from_iterable(sliding_window_view(col, inarow) for col in grid.T)  # type: ignore
 
 
 def generate_positive_diagonal_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
     nrow, ncol = grid.shape
     diags = (grid.diagonal(diag_idx) for diag_idx in range(-nrow + 1, ncol))
-    return itertools.chain.from_iterable(sliding_window_view(diag, inarow) for diag in diags if len(diag) >= inarow)
+    return itertools.chain.from_iterable(
+        sliding_window_view(diag, inarow) for diag in diags if len(diag) >= inarow  # type: ignore
+    )
 
 
 def generate_negative_diagonal_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
-    grid_flipped = np.fliplr(grid)
+    grid_flipped = np.fliplr(grid)  # type: ignore
     nrow, ncol = grid_flipped.shape
     diags = (grid_flipped.diagonal(diag_idx) for diag_idx in range(-nrow + 1, ncol))
-    return itertools.chain.from_iterable(sliding_window_view(diag, inarow) for diag in diags if len(diag) >= inarow)
+    return itertools.chain.from_iterable(
+        sliding_window_view(diag, inarow) for diag in diags if len(diag) >= inarow  # type: ignore
+    )  # type: ignore
 
 
 def generate_windows(grid: np.ndarray, inarow: int) -> Iterable[np.ndarray]:
