@@ -15,7 +15,7 @@ class Agent:
     _scorer: Optional[connectx_solver.ConnectXScorer]
     _minimax: Optional[connectx_solver.ConnectXMinimax]
 
-    def __init__(self, outdir: Path) -> None:
+    def __init__(self, outdir: Optional[Path]) -> None:
         self._outdir = outdir
 
         self._game = None
@@ -50,6 +50,8 @@ class Agent:
         return best_action.col
 
     def _dump_gametree(self, root_node: Node[connectx_game.ConnectXState, connectx_game.ConnectXAction]) -> None:
+        if self._outdir is None:
+            return
         dumpdir = self._outdir / "tree"
         dumpdir.mkdir(exist_ok=True)
         with open(dumpdir / f"{str(root_node.state.step)}.json", "w") as f:
