@@ -5,7 +5,8 @@ from typing import Optional
 
 import numpy as np
 
-from connectx.tutorial import connectx_game, connectx_solver, minimax
+from connectx.gamesolver import gametree
+from connectx.tutorial import connectx_game, connectx_solver
 
 
 class Agent:
@@ -48,7 +49,7 @@ class Agent:
         return best_action.col
 
     def _dump_gametree(
-        self, root_node: minimax.Node[connectx_game.ConnectXState, connectx_game.ConnectXAction]
+        self, root_node: gametree.Node[connectx_game.ConnectXState, connectx_game.ConnectXAction]
     ) -> None:
         if self._outdir is None:
             return

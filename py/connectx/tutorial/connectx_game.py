@@ -9,7 +9,7 @@ import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 from typing_extensions import Literal
 
-from connectx.tutorial import minimax
+from connectx.gamesolver import game
 
 Mark = Literal[1, 2]  # 1: player, 2: opponent
 
@@ -29,10 +29,10 @@ class Config:
     inarow: int
 
 
-class ConnectXAction(minimax.Action):
+class ConnectXAction(game.Action):
     col: int
 
-    def __init__(self, col: int, turn: minimax.Turn) -> None:
+    def __init__(self, col: int, turn: game.Turn) -> None:
         self.col = col
         self._turn = turn
 
@@ -46,7 +46,7 @@ class ConnectXAction(minimax.Action):
         return f"col={self.col}"
 
     @property
-    def turn(self) -> minimax.Turn:
+    def turn(self) -> game.Turn:
         return self._turn
 
     ###
@@ -60,7 +60,7 @@ class ConnectXAction(minimax.Action):
         return f"ConnectXAction<col={self.col}>"
 
 
-class ConnectXState(minimax.State):
+class ConnectXState(game.State):
     def __init__(self, grid: np.ndarray, next_player: Mark, step: int) -> None:
         self.grid = grid
         self.next_player = next_player
@@ -69,11 +69,11 @@ class ConnectXState(minimax.State):
         self._id = str(uuid.uuid1())
 
     @property
-    def next_turn(self) -> minimax.Turn:
+    def next_turn(self) -> game.Turn:
         if self.next_player == 1:
-            return minimax.Turn.PLAYER
+            return game.Turn.PLAYER
         else:
-            return minimax.Turn.OPPONENT
+            return game.Turn.OPPONENT
 
     @property
     def id(self) -> str:
@@ -83,7 +83,7 @@ class ConnectXState(minimax.State):
         return "\n".join("".join(str(x) for x in row) for row in self.grid.tolist())
 
 
-class ConnectXGame(minimax.Game[ConnectXState, ConnectXAction]):
+class ConnectXGame(game.Game[ConnectXState, ConnectXAction]):
     def __init__(self, columns: int, rows: int, inarow: int) -> None:
         self.columns = columns
         self.rows = rows

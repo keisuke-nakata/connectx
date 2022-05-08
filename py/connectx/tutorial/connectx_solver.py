@@ -1,6 +1,7 @@
 import numpy as np
 
-from connectx.tutorial import connectx_game, minimax
+from connectx.gamesolver import minimax
+from connectx.tutorial import connectx_game
 
 
 class ConnectXScorer(minimax.Scorer[connectx_game.ConnectXState]):
