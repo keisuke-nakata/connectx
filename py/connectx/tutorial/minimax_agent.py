@@ -14,7 +14,8 @@ class Agent:
     _scorer: Optional[connectx_solver.ConnectXScorer]
     _minimax: Optional[connectx_solver.ConnectXMinimax]
 
-    def __init__(self, outdir: Optional[Path]) -> None:
+    def __init__(self, depth: int, outdir: Optional[Path]) -> None:
+        self._depth = depth
         self._outdir = outdir
 
         self._game = None
@@ -23,7 +24,7 @@ class Agent:
 
     def _call_core(self, state: connectx_game.ConnectXState) -> connectx_game.ConnectXAction:
         assert self._minimax is not None
-        root_node = self._minimax(3, state)
+        root_node = self._minimax(self._depth, state)
 
         self._dump_gametree(root_node)
 
