@@ -6,23 +6,14 @@ from typing import Any, Generic, Optional, TypeVar, Sequence
 from connectx.gamesolver import game
 
 
-class Edge(Generic[game.A]):
-    def __init__(self, action: game.A) -> None:
-        self._action = action
-
-        self.is_rational = False
-
-    @property
+class Edge(abc.ABC, Generic[game.A]):
+    @abc.abstractproperty
     def action(self) -> game.A:
-        return self._action
+        pass
 
-    @property
+    @abc.abstractproperty
     def is_rational(self) -> bool:
-        return self._is_rational
-
-    @is_rational.setter
-    def is_rational(self, is_rational: bool) -> None:
-        self._is_rational = is_rational
+        pass
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -33,50 +24,30 @@ class Edge(Generic[game.A]):
         }
 
 
-class Node(Generic[game.S, game.A]):
-    def __init__(
-        self,
-        state: game.S,
-        is_terminal: bool,
-        score: float,
-        parent_edge: Optional[Edge],
-        children: Sequence["Node[game.S, game.A]"],
-    ) -> None:
-        self._state = state
-        self._is_terminal = is_terminal
-        self._score = score
-        self._parent_edge = parent_edge
-        self._children = children
-
-        self.is_rational = False
-
-    @property
+class Node(abc.ABC, Generic[game.S, game.A]):
+    @abc.abstractproperty
     def state(self) -> game.S:
-        return self._state
+        pass
 
-    @property
+    @abc.abstractproperty
     def is_terminal(self) -> bool:
-        return self._is_terminal
+        pass
 
-    @property
+    @abc.abstractproperty
     def score(self) -> float:
-        return self._score
+        pass
 
-    @property
+    @abc.abstractproperty
     def is_rational(self) -> bool:
-        return self._is_rational
+        pass
 
-    @is_rational.setter
-    def is_rational(self, is_rational: bool) -> None:
-        self._is_rational = is_rational
-
-    @property
+    @abc.abstractproperty
     def parent_edge(self) -> Optional[Edge[game.A]]:
-        return self._parent_edge
+        pass
 
-    @property
+    @abc.abstractproperty
     def children(self) -> Sequence["Node[game.S, game.A]"]:
-        return self._children
+        pass
 
     def to_dict(self) -> dict[str, Any]:
         return {
