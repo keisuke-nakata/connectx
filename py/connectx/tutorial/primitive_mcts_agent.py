@@ -2,6 +2,7 @@ import json
 import random
 from pathlib import Path
 from typing import Optional
+import time
 
 import numpy as np
 
@@ -23,6 +24,8 @@ class Agent:
         self._primitive_mcts = None
 
     def _call_core(self, state: connectx_game.ConnectXState) -> connectx_game.ConnectXAction:
+        start = time.time()
+
         assert self._primitive_mcts is not None
         root_node = self._primitive_mcts(self._depth, state)
 
@@ -35,6 +38,9 @@ class Agent:
         actions = [node.parent_edge.action for node in r_children if node.parent_edge is not None]
 
         assert len(scores) == len(actions)
+
+        end = time.time()
+        print(end - start)
         return actions[np.argmax(scores)]
 
     def __call__(self, obs: connectx_game.Observation, config: connectx_game.Config) -> int:
