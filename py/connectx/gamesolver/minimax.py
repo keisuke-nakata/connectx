@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Generic, Optional, Sequence
+from typing import Generic, Optional, Sequence, Any, Mapping
 
 import numpy as np
 
@@ -25,21 +25,25 @@ class MinimaxEdge(gametree.Edge[game.A]):
     def is_rational(self, is_rational: bool) -> None:
         self._is_rational = is_rational
 
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        return {}
+
 
 class MinimaxNode(gametree.Node[game.S, game.A]):
     def __init__(
         self,
         state: game.S,
         is_terminal: bool,
-        score: float,
         parent_edge: Optional[MinimaxEdge],
         children: Sequence["MinimaxNode[game.S, game.A]"],
+        score: float,
     ) -> None:
         self._state = state
         self._is_terminal = is_terminal
-        self._score = score
         self._parent_edge = parent_edge
         self._children = children
+        self._score = score
 
         self.is_rational = False
 
@@ -52,10 +56,6 @@ class MinimaxNode(gametree.Node[game.S, game.A]):
         return self._is_terminal
 
     @property
-    def score(self) -> float:
-        return self._score
-
-    @property
     def is_rational(self) -> bool:
         return self._is_rational
 
@@ -64,12 +64,24 @@ class MinimaxNode(gametree.Node[game.S, game.A]):
         self._is_rational = is_rational
 
     @property
+    def properties(self) -> Mapping[str, Any]:
+        return {
+            "score": self.score,
+        }
+
+    @property
     def parent_edge(self) -> Optional[MinimaxEdge[game.A]]:
         return self._parent_edge
 
     @property
     def children(self) -> Sequence["MinimaxNode[game.S, game.A]"]:
         return self._children
+
+    # custom functions
+
+    @property
+    def score(self) -> float:
+        return self._score
 
 
 class Minimax(Generic[game.S, game.A, gametree.SC]):
@@ -90,12 +102,12 @@ class Minimax(Generic[game.S, game.A, gametree.SC]):
         is_terminal, terminal_score = self._game.get_terminal_score(state)
         if is_terminal:
             return MinimaxNode[game.S, game.A](
-                state=state, is_terminal=True, score=terminal_score, parent_edge=parent_edge, children=[]
+                state=state, is_terminal=True, parent_edge=parent_edge, children=[], score=terminal_score
             )
         if depth == 0:
             score = self._scorer(state)
             return MinimaxNode[game.S, game.A](
-                state=state, is_terminal=False, score=score, parent_edge=parent_edge, children=[]
+                state=state, is_terminal=False, parent_edge=parent_edge, children=[], score=score
             )
         available_actions = self._game.get_available_actions(state)
         next_states = ((self._game.step(state, action), MinimaxEdge[game.A](action)) for action in available_actions)
@@ -103,7 +115,7 @@ class Minimax(Generic[game.S, game.A, gametree.SC]):
         aggregator = min if state.next_turn == game.Turn.OPPONENT else max
         score = aggregator(node.score for node in next_nodes)
         return MinimaxNode[game.S, game.A](
-            state=state, is_terminal=False, score=score, parent_edge=parent_edge, children=next_nodes
+            state=state, is_terminal=False, parent_edge=parent_edge, children=next_nodes, score=score
         )
 
     def _mark_rational(self, node: MinimaxNode[game.S, game.A]) -> None:

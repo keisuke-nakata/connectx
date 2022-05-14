@@ -25,7 +25,7 @@ if __name__ == "__main__":
     from pathlib import Path
     import datetime as dt
     outdir = Path("./out").resolve() / dt.datetime.now().strftime("%Y%m%d_%H%M%S")
-    outdir.mkdir(exist_ok=True)
+    outdir.mkdir(exist_ok=True, parents=True)
 
     env = make("connectx", debug=True)
 
@@ -35,7 +35,7 @@ if __name__ == "__main__":
     #     print(html, file=f)
     # get_win_percentages(one_step_lookahead_agent.agent, "random")
 
-    # env.run([minimax_agent.Agent(outdir), "random"])
+    # env.run([minimax_agent.Agent(depth=3, outdir=outdir), "random"])
     # html = env.render(mode="html")
     # with open(outdir / "a.html", "w") as f:
     #     print(html, file=f)

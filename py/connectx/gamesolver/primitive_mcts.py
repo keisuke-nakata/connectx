@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, Optional, Sequence
+from typing import Generic, Optional, Sequence, Any, Mapping
 import random
 
 import numpy as np
@@ -30,6 +30,10 @@ class PrimitiveMCTSEdge(gametree.Edge[game.A]):
     def is_rational(self, is_rational: bool) -> None:
         self._is_rational = is_rational
 
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        return {}
+
 
 class PrimitiveMCTSNode(gametree.Node[game.S, game.A]):
     def __init__(
@@ -37,15 +41,14 @@ class PrimitiveMCTSNode(gametree.Node[game.S, game.A]):
         state: game.S,
         is_terminal: bool,
         parent_edge: Optional[PrimitiveMCTSEdge],
-        children: Sequence["PrimitiveMCTSNode[game.S, game.A]"],
         parent_node: Optional["PrimitiveMCTSNode[game.S, game.A]"],
     ) -> None:
         self._state = state
         self._is_terminal = is_terminal
         self._parent_edge = parent_edge
-        self._children = children
         self._parent_node = parent_node
 
+        self._children: Sequence["PrimitiveMCTSNode[game.S, game.A]"] = []
         self.is_rational = False
         self._win_rate = (0.0, 0)  # (n_player_win, n_play)
 
@@ -58,16 +61,19 @@ class PrimitiveMCTSNode(gametree.Node[game.S, game.A]):
         return self._is_terminal
 
     @property
-    def score(self) -> float:
-        return self._win_rate[0] / self._win_rate[1]
-
-    @property
     def is_rational(self) -> bool:
         return self._is_rational
 
     @is_rational.setter
     def is_rational(self, is_rational: bool) -> None:
         self._is_rational = is_rational
+
+    @property
+    def properties(self) -> Mapping[str, Any]:
+        return {
+            "score": self.score,
+            "winRate": f"{self.win_rate[0]}/{self.win_rate[1]}",
+        }
 
     @property
     def parent_edge(self) -> Optional[PrimitiveMCTSEdge[game.A]]:
@@ -82,6 +88,7 @@ class PrimitiveMCTSNode(gametree.Node[game.S, game.A]):
         self._children = children
 
     # custom functions
+
     @property
     def parent_node(self) -> Optional["PrimitiveMCTSNode[game.S, game.A]"]:
         return self._parent_node
@@ -92,6 +99,10 @@ class PrimitiveMCTSNode(gametree.Node[game.S, game.A]):
 
     def update_win_rate(self, score: float) -> None:
         self._win_rate = (self._win_rate[0] + score, self._win_rate[1] + 1)
+
+    @property
+    def score(self) -> float:
+        return self._win_rate[0] / self._win_rate[1]
 
 
 class PrimitiveMCTS(Generic[game.S, game.A]):
@@ -105,13 +116,17 @@ class PrimitiveMCTS(Generic[game.S, game.A]):
         if is_terminal:
             raise RuntimeError
 
-        root_node = PrimitiveMCTSNode[game.S, game.A](state, is_terminal, None, [], None)
+        root_node = PrimitiveMCTSNode[game.S, game.A](
+            state=state, is_terminal=is_terminal, parent_edge=None, parent_node=None
+        )
         playout_nodes = self._expand_tree(root_node, depth)
 
         for node in playout_nodes:
             for _ in range(30):
                 score = self._playout(node)
                 self._backprop(node, score)
+
+        self._mark_rational(root_node)
 
         return root_node
 
@@ -134,7 +149,7 @@ class PrimitiveMCTS(Generic[game.S, game.A]):
         next_is_terminals = [self._game.get_terminal_score(state[0])[0] for state in next_states]
 
         next_nodes = [
-            PrimitiveMCTSNode[game.S, game.A](state, is_terminal, edge, [], node)
+            PrimitiveMCTSNode[game.S, game.A](state=state, is_terminal=is_terminal, parent_edge=edge, parent_node=node)
             for (state, edge), is_terminal in zip(next_states, next_is_terminals)
         ]
         node.children = next_nodes

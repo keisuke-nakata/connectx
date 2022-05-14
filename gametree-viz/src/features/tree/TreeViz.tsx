@@ -36,7 +36,7 @@ const initDiagram = () => {
         .bind("text", "isTerminal", (isTerminal) => "terminal: " + isTerminal)
         .bind("stroke", "isTerminal", (isTerminal) => isTerminal ? "black" : "gray"))
       .add(new go.TextBlock(GOJSSTYLES.Node.Table.Header1)
-        .bind("text", "score", (score) => "score: " + score))
+        .bind("text", "properties", (obj) => JSON.stringify(obj, null, "__")))
       .add(go.GraphObject.make("PanelExpanderButton", "CONTENT", GOJSSTYLES.Node.Table.ExpanderButton))
       .add(new go.TextBlock({ name: "CONTENT", ...GOJSSTYLES.Node.Table.Content})
         .bind("text", "repr")))
@@ -59,13 +59,14 @@ const nodeToArray = (node: Node, parentId: string | null) => {
     edgeTurn: node.parentEdge.turn,
     edgeColor: node.parentEdge.turn === "player" ? "DeepSkyBlue" : "red",
     edgeIsRational: node.parentEdge.isRational,
+    edgeProperies: node.parentEdge.properties,
   } : {};
   const thisNode: DiagramProps["nodeDataArray"] = [{
     key: node.id,
     repr: node.repr,
     isTerminal: node.isTerminal,
-    score: node.score,
     isRational: node.isRational,
+    properties: node.properties,
     ...thisParentEdge,
   }];
   if (node.children.length > 0) {
