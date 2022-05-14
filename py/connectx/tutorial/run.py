@@ -23,7 +23,8 @@ def get_win_percentages(agent1: Agent, agent2: Agent, n_rounds: int = 100) -> No
 
 if __name__ == "__main__":
     from pathlib import Path
-    outdir = Path("./out").resolve()
+    import datetime as dt
+    outdir = Path("./out").resolve() / dt.datetime.now().strftime("%Y%m%d_%H%M%S")
     outdir.mkdir(exist_ok=True)
 
     env = make("connectx", debug=True)

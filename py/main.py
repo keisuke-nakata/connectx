@@ -1,8 +1,8 @@
 from connectx.tutorial import connectx_game
-from connectx.tutorial import minimax_agent
+from connectx.tutorial import primitive_mcts_agent
 
 
-agent = minimax_agent.Agent(depth=3, outdir=None)
+agent = primitive_mcts_agent.Agent(depth=1, outdir=None)
 
 
 def act(obs: connectx_game.Observation, config: connectx_game.Config) -> int:
