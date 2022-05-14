@@ -3,8 +3,7 @@ from typing import Union, Callable
 import numpy as np
 from kaggle_environments import make, evaluate
 
-from connectx.tutorial import one_step_lookahead_agent
-from connectx.tutorial import minimax_agent
+from connectx.tutorial import one_step_lookahead_agent, minimax_agent, primitive_mcts_agent
 
 Agent = Union[Callable, str]
 
@@ -35,10 +34,10 @@ if __name__ == "__main__":
     #     print(html, file=f)
     # get_win_percentages(one_step_lookahead_agent.agent, "random")
 
-    env.run([minimax_agent.Agent(outdir), "random"])
-    html = env.render(mode="html")
-    with open(outdir / "a.html", "w") as f:
-        print(html, file=f)
+    # env.run([minimax_agent.Agent(outdir), "random"])
+    # html = env.render(mode="html")
+    # with open(outdir / "a.html", "w") as f:
+    #     print(html, file=f)
     # get_win_percentages(minimax_agent.Agent(outdir), "random")
 
     # env.run([minimax_agent.Agent(outdir), one_step_lookahead_agent.agent])
@@ -52,3 +51,8 @@ if __name__ == "__main__":
     # with open("a.html", "w") as f:
     #     print(html, file=f)
     # get_win_percentages(minimax_agent.Agent(outdir) "random")
+
+    env.run([primitive_mcts_agent.Agent(depth=1, outdir=outdir), "random"])
+    html = env.render(mode="html")
+    with open(outdir / "a.html", "w") as f:
+        print(html, file=f)

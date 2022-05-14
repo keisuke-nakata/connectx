@@ -7,6 +7,10 @@ from connectx.gamesolver import game
 
 
 class Edge(abc.ABC, Generic[game.A]):
+    @property
+    def id(self) -> str:
+        return self.action.id
+
     @abc.abstractproperty
     def action(self) -> game.A:
         pass
@@ -17,7 +21,7 @@ class Edge(abc.ABC, Generic[game.A]):
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "id": self.action.id,
+            "id": self.id,
             "repr": str(self.action),
             "turn": self.action.turn.name.lower(),
             "isRational": self.is_rational,
@@ -25,6 +29,10 @@ class Edge(abc.ABC, Generic[game.A]):
 
 
 class Node(abc.ABC, Generic[game.S, game.A]):
+    @property
+    def id(self) -> str:
+        return self.state.id
+
     @abc.abstractproperty
     def state(self) -> game.S:
         pass
@@ -51,7 +59,7 @@ class Node(abc.ABC, Generic[game.S, game.A]):
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "id": self.state.id,
+            "id": self.id,
             "repr": str(self.state),
             "isTerminal": self.is_terminal,
             "score": self.score,

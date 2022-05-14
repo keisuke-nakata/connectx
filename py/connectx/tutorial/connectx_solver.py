@@ -1,6 +1,6 @@
 import numpy as np
 
-from connectx.gamesolver import minimax, gametree
+from connectx.gamesolver import minimax, gametree, primitive_mcts
 from connectx.tutorial import connectx_game
 
 
@@ -50,10 +50,13 @@ class ConnectXScorer(gametree.Scorer[connectx_game.ConnectXState]):
 
 class ConnectXMinimax(
     minimax.Minimax[
-        connectx_game.ConnectXGame,
         connectx_game.ConnectXState,
         connectx_game.ConnectXAction,
         ConnectXScorer,
     ]
 ):
+    pass
+
+
+class ConnectXPrimitiveMCTS(primitive_mcts.PrimitiveMCTS[connectx_game.ConnectXState, connectx_game.ConnectXAction]):
     pass

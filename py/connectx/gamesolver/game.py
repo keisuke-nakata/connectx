@@ -64,6 +64,3 @@ class Game(abc.ABC, Generic[S, A]):
     @abc.abstractmethod
     def step(self, state: S, action: A) -> S:
         pass
-
-
-G = TypeVar("G", bound=Game)

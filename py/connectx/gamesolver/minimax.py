@@ -72,8 +72,8 @@ class MinimaxNode(gametree.Node[game.S, game.A]):
         return self._children
 
 
-class Minimax(Generic[game.G, game.S, game.A, gametree.SC]):
-    def __init__(self, game: game.G, scorer: gametree.SC) -> None:
+class Minimax(Generic[game.S, game.A, gametree.SC]):
+    def __init__(self, game: game.Game[game.S, game.A], scorer: gametree.SC) -> None:
         self._game = game
         self._scorer = scorer
 
@@ -203,7 +203,7 @@ if __name__ == "__main__":
             }
             return x[state.i]
 
-    minimax = Minimax[ToyGame, ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer())
+    minimax = Minimax[ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer())
     root_node = minimax(depth=3, state=ToyState(0))
 
     import json
