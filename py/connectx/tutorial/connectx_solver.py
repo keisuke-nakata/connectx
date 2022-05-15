@@ -1,6 +1,6 @@
 import numpy as np
 
-from connectx.gamesolver import minimax, gametree, primitive_mcts
+from connectx.gamesolver import mcts, minimax, gametree
 from connectx.tutorial import connectx_game
 
 
@@ -58,5 +58,5 @@ class ConnectXMinimax(
     pass
 
 
-class ConnectXPrimitiveMCTS(primitive_mcts.PrimitiveMCTS[connectx_game.ConnectXState, connectx_game.ConnectXAction]):
+class ConnectXMCTS(mcts.MCTS[connectx_game.ConnectXState, connectx_game.ConnectXAction]):
     pass

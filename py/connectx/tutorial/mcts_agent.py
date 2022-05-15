@@ -13,7 +13,7 @@ from connectx.tutorial import connectx_game, connectx_solver
 class Agent:
     _game: Optional[connectx_game.ConnectXGame]
     _scorer: Optional[connectx_solver.ConnectXScorer]
-    _primitive_mcts: Optional[connectx_solver.ConnectXPrimitiveMCTS]
+    _mcts: Optional[connectx_solver.ConnectXMCTS]
 
     def __init__(self, depth: int, outdir: Optional[Path]) -> None:
         self._depth = depth
@@ -21,13 +21,13 @@ class Agent:
 
         self._game = None
         self._scorer = None
-        self._primitive_mcts = None
+        self._mcts = None
 
     def _call_core(self, state: connectx_game.ConnectXState) -> connectx_game.ConnectXAction:
         start = time.time()
 
-        assert self._primitive_mcts is not None
-        root_node = self._primitive_mcts(self._depth, state)
+        assert self._mcts is not None
+        root_node = self._mcts(self._depth, state)
 
         self._dump_gametree(root_node)
 
@@ -44,9 +44,9 @@ class Agent:
         return actions[np.argmax(scores)]
 
     def __call__(self, obs: connectx_game.Observation, config: connectx_game.Config) -> int:
-        if (self._game is None) or (self._scorer is None) or (self._primitive_mcts is None):
+        if (self._game is None) or (self._scorer is None) or (self._mcts is None):
             self._game = connectx_game.ConnectXGame(config.columns, config.rows, config.inarow)
-            self._primitive_mcts = connectx_solver.ConnectXPrimitiveMCTS(self._game)
+            self._mcts = connectx_solver.ConnectXMCTS(self._game)
 
         grid = np.asarray(obs.board).reshape(config.rows, config.columns)
         state = connectx_game.ConnectXState(grid, next_player=1, step=obs.step)
