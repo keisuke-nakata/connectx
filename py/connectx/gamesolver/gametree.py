@@ -34,7 +34,7 @@ class Edge(Generic[game.A]):
 NodeId = NewType("NodeId", str)
 
 
-class Node(Generic[game.R, game.S, game.A]):
+class Node(Generic[game.S, game.R, game.A]):
     def __init__(self, state: game.S, result: Optional[game.R], parent_edge: Optional[Edge[game.A]]) -> None:
         self._id = NodeId(str(uuid.uuid4()))
         self._state = state
@@ -87,13 +87,13 @@ class Scorer(abc.ABC, Generic[game.S]):
 SC = TypeVar("SC", bound=Scorer)
 
 
-class Tree(Generic[game.R, game.S, game.A]):
+class Tree(Generic[game.S, game.R, game.A]):
     def __init__(self) -> None:
-        self._nodes: dict[str, Node[game.R, game.S, game.A]] = {}
+        self._nodes: dict[str, Node[game.S, game.R, game.A]] = {}
         self._root_node_id: Optional[NodeId] = None
 
     def add_root_node(self, state: game.S) -> NodeId:
-        node = Node[game.R, game.S, game.A](state=state, result=None, parent_edge=None)
+        node = Node[game.S, game.R, game.A](state=state, result=None, parent_edge=None)
         self._nodes[node.id] = node
         self._root_node_id = node.id
         return node.id
@@ -101,7 +101,7 @@ class Tree(Generic[game.R, game.S, game.A]):
     def grow(self, parent_node_id: NodeId, action: game.A, state: game.S, result: Optional[game.R]) -> NodeId:
         """Raises KeyError if node does not exist."""
         edge = Edge[game.A](action=action)
-        node = Node[game.R, game.S, game.A](state=state, result=result, parent_edge=edge)
+        node = Node[game.S, game.R, game.A](state=state, result=result, parent_edge=edge)
         parent_node = self._nodes[parent_node_id]  # maybe raises KeyError
         parent_node.add_child(node.id)
         self._nodes[node.id] = node
@@ -122,8 +122,8 @@ class Tree(Generic[game.R, game.S, game.A]):
         node = self._nodes[node_id]  # maybe raises KeyError
         return (node.state, node.result)
 
-    def to_dict(self, get_rational_score: Callable[[Node[game.R, game.S, game.A]], float]) -> dict[str, Any]:
-        def node_to_dict(node: Node[game.R, game.S, game.A], is_rational: bool) -> dict[str, Any]:
+    def to_dict(self, get_rational_score: Callable[[Node[game.S, game.R, game.A]], float]) -> dict[str, Any]:
+        def node_to_dict(node: Node[game.S, game.R, game.A], is_rational: bool) -> dict[str, Any]:
             rational_scores = []
             existing_children = []
             for child_node_id in node.children:

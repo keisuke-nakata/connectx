@@ -5,9 +5,9 @@ from typing import Generic, Optional
 from connectx.gamesolver import game, gametree
 
 
-class Minimax(Generic[game.R, game.S, game.A, gametree.SC]):
+class Minimax(Generic[game.S, game.R, game.A, gametree.SC]):
     def __init__(
-        self, game: game.Game[game.R, game.S, game.A], scorer: gametree.SC, tree: gametree.Tree[game.R, game.S, game.A]
+        self, game: game.Game[game.S, game.R, game.A], scorer: gametree.SC, tree: gametree.Tree[game.S, game.R, game.A]
     ) -> None:
         self._game = game
         self._scorer = scorer
@@ -78,14 +78,6 @@ if __name__ == "__main__":
         14: 30,
     }
 
-    class ToyResult(game.Result):
-        def __init__(self, winner: Optional[game.Turn]) -> None:
-            self._winner = winner
-
-        @property
-        def winner(self) -> Optional[game.Turn]:
-            return self._winner
-
     class ToyState(game.State):
         def __init__(self, i: int) -> None:
             self.i = i
@@ -99,6 +91,14 @@ if __name__ == "__main__":
 
         def __str__(self) -> str:
             return f"State #{self.i}"
+
+    class ToyResult(game.Result):
+        def __init__(self, winner: Optional[game.Turn]) -> None:
+            self._winner = winner
+
+        @property
+        def winner(self) -> Optional[game.Turn]:
+            return self._winner
 
     class ToyAction(game.Action):
         def __init__(self, to: int) -> None:
@@ -114,7 +114,7 @@ if __name__ == "__main__":
             else:
                 return game.Turn.OPPONENT
 
-    class ToyGame(game.Game[ToyResult, ToyState, ToyAction]):
+    class ToyGame(game.Game[ToyState, ToyResult, ToyAction]):
         def get_result(self, state: ToyState) -> Optional[ToyResult]:
             if state.i < 7:
                 return None
@@ -139,8 +139,8 @@ if __name__ == "__main__":
                 return 0
             return toy_scores[state.i]
 
-    tree = gametree.Tree[ToyResult, ToyState, ToyAction]()
-    minimax = Minimax[ToyResult, ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer(), tree)
+    tree = gametree.Tree[ToyState, ToyResult, ToyAction]()
+    minimax = Minimax[ToyState, ToyResult, ToyAction, ToyScorer](ToyGame(), ToyScorer(), tree)
     minimax(depth=3, state=ToyState(0))
 
     import datetime as dt

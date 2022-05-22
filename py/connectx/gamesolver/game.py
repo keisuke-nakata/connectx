@@ -10,12 +10,6 @@ class Turn(enum.Enum):
     OPPONENT = enum.auto()
 
 
-class Result(abc.ABC):
-    @abc.abstractproperty
-    def winner(self) -> Optional[Turn]:  # None は draw
-        pass
-
-
 class State(abc.ABC):
     @abc.abstractproperty
     def next_turn(self) -> Turn:
@@ -24,6 +18,12 @@ class State(abc.ABC):
     # for node's `repr`
     @abc.abstractmethod
     def __str__(self) -> str:
+        pass
+
+
+class Result(abc.ABC):
+    @abc.abstractproperty
+    def winner(self) -> Optional[Turn]:  # None は draw
         pass
 
 
@@ -38,12 +38,12 @@ class Action(abc.ABC):
         pass
 
 
-R = TypeVar("R", bound=Result)
 S = TypeVar("S", bound=State)
+R = TypeVar("R", bound=Result)
 A = TypeVar("A", bound=Action)
 
 
-class Game(abc.ABC, Generic[R, S, A]):
+class Game(abc.ABC, Generic[S, R, A]):
     """
     ゲームのルールを記述するクラス。state は外に持ち、このクラス自体は状態を持たない
     """
