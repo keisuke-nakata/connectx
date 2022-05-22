@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import abc
 import uuid
-from collections.abc import Callable, Mapping, Sequence
-from typing import Any, Generic, NewType, Optional, TypeVar
+from collections.abc import Mapping, Sequence
+from typing import Any, Callable, Generic, NewType, Optional, TypeVar
+import random
 
 import numpy as np
 
@@ -85,9 +86,16 @@ class Scorer(abc.ABC, Generic[game.S]):
 
 
 SC = TypeVar("SC", bound=Scorer)
+RF = Callable[[Node[game.S, game.R, game.A]], float]
 
 
 class Tree(Generic[game.S, game.R, game.A]):
+    @property
+    def root_node_id(self) -> NodeId:
+        if self._root_node_id is None:
+            raise RuntimeError
+        return self._root_node_id
+
     def __init__(self) -> None:
         self._nodes: dict[str, Node[game.S, game.R, game.A]] = {}
         self._root_node_id: Optional[NodeId] = None
@@ -122,20 +130,47 @@ class Tree(Generic[game.S, game.R, game.A]):
         node = self._nodes[node_id]  # maybe raises KeyError
         return (node.state, node.result)
 
-    def to_dict(self, get_rational_score: Callable[[Node[game.S, game.R, game.A]], float]) -> dict[str, Any]:
+    def _get_children_with_rational(
+        self, node: Node[game.S, game.R, game.A], get_rational_score: RF[game.S, game.R, game.A]
+    ) -> tuple[list[Node[game.S, game.R, game.A]], int]:
+        rational_scores = []
+        existing_children = []
+        for child_node_id in node.children:
+            try:
+                child_node = self._nodes[child_node_id]
+            except KeyError:
+                continue
+            rational_score = get_rational_score(child_node)
+            rational_scores.append(rational_score)
+            existing_children.append(child_node)
+        aggregator = np.argmin if node.state.next_turn == game.Turn.OPPONENT else np.argmax
+        if len(rational_scores) > 0:
+            shuff = list(range(len(rational_scores)))
+            random.shuffle(shuff)
+            rational_idx = shuff[(aggregator([rational_scores[s] for s in shuff]))]
+        else:
+            rational_idx = -1  # dummy
+        return existing_children, rational_idx
+
+    def get_rational_action(self, get_rational_score: RF[game.S, game.R, game.A]) -> game.A:
+        try:
+            root_node = self._nodes[self.root_node_id]
+        except KeyError:
+            raise RuntimeError
+        existing_children, rational_idx = self._get_children_with_rational(
+            node=root_node, get_rational_score=get_rational_score
+        )
+        rational_child = existing_children[rational_idx]
+        edge = rational_child.parent_edge
+        if edge is None:
+            raise ValueError
+        return edge.action
+
+    def to_dict(self, get_rational_score: RF[game.S, game.R, game.A]) -> dict[str, Any]:
         def node_to_dict(node: Node[game.S, game.R, game.A], is_rational: bool) -> dict[str, Any]:
-            rational_scores = []
-            existing_children = []
-            for child_node_id in node.children:
-                try:
-                    child_node = self._nodes[child_node_id]
-                except KeyError:
-                    continue
-                rational_score = get_rational_score(child_node)
-                rational_scores.append(rational_score)
-                existing_children.append(child_node)
-            aggregator = np.argmin if node.state.next_turn == game.Turn.OPPONENT else np.argmax
-            rational_idx = aggregator(rational_scores) if len(rational_scores) > 0 else None
+            existing_children, rational_idx = self._get_children_with_rational(
+                node=node, get_rational_score=get_rational_score
+            )
             return {
                 "id": node.id,
                 "repr": str(node.state),
@@ -146,7 +181,7 @@ class Tree(Generic[game.S, game.R, game.A]):
                     None if node.parent_edge is None else edge_to_dict(edge=node.parent_edge, is_rational=is_rational)
                 ),
                 "children": [
-                    node_to_dict(node=child_node, is_rational=bool(idx == rational_idx) and is_rational)
+                    node_to_dict(node=child_node, is_rational=(idx == rational_idx) and is_rational)
                     for idx, child_node, in enumerate(existing_children)
                 ],
             }
@@ -160,10 +195,8 @@ class Tree(Generic[game.S, game.R, game.A]):
                 "properties": edge.properties,
             }
 
-        if self._root_node_id is None:
-            raise RuntimeError
         try:
-            root_node = self._nodes[self._root_node_id]
+            root_node = self._nodes[self.root_node_id]
         except KeyError:
             raise RuntimeError
 
