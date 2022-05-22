@@ -1,138 +1,90 @@
 from __future__ import annotations
 
-from typing import Generic, Optional, Sequence, Any, Mapping
-
-import numpy as np
+from typing import Generic, Optional
 
 from connectx.gamesolver import game, gametree
 
 
-class MinimaxEdge(gametree.Edge[game.A]):
-    def __init__(self, action: game.A) -> None:
-        self._action = action
-
-        self.is_rational = False
-
-    @property
-    def action(self) -> game.A:
-        return self._action
-
-    @property
-    def is_rational(self) -> bool:
-        return self._is_rational
-
-    @is_rational.setter
-    def is_rational(self, is_rational: bool) -> None:
-        self._is_rational = is_rational
-
-    @property
-    def properties(self) -> Mapping[str, Any]:
-        return {}
-
-
-class MinimaxNode(gametree.Node[game.S, game.A]):
+class Minimax(Generic[game.R, game.S, game.A, gametree.SC]):
     def __init__(
-        self,
-        state: game.S,
-        is_terminal: bool,
-        parent_edge: Optional[MinimaxEdge],
-        children: Sequence["MinimaxNode[game.S, game.A]"],
-        score: float,
+        self, game: game.Game[game.R, game.S, game.A], scorer: gametree.SC, tree: gametree.Tree[game.R, game.S, game.A]
     ) -> None:
-        self._state = state
-        self._is_terminal = is_terminal
-        self._parent_edge = parent_edge
-        self._children = children
-        self._score = score
-
-        self.is_rational = False
-
-    @property
-    def state(self) -> game.S:
-        return self._state
-
-    @property
-    def is_terminal(self) -> bool:
-        return self._is_terminal
-
-    @property
-    def is_rational(self) -> bool:
-        return self._is_rational
-
-    @is_rational.setter
-    def is_rational(self, is_rational: bool) -> None:
-        self._is_rational = is_rational
-
-    @property
-    def properties(self) -> Mapping[str, Any]:
-        return {
-            "score": self.score,
-        }
-
-    @property
-    def parent_edge(self) -> Optional[MinimaxEdge[game.A]]:
-        return self._parent_edge
-
-    @property
-    def children(self) -> Sequence["MinimaxNode[game.S, game.A]"]:
-        return self._children
-
-    # custom functions
-
-    @property
-    def score(self) -> float:
-        return self._score
-
-
-class Minimax(Generic[game.S, game.A, gametree.SC]):
-    def __init__(self, game: game.Game[game.S, game.A], scorer: gametree.SC) -> None:
         self._game = game
         self._scorer = scorer
+        self._tree = tree
 
-    def __call__(
-        self, depth: int, state: game.S, parent_edge: Optional[MinimaxEdge[game.A]] = None
-    ) -> MinimaxNode[game.S, game.A]:
-        root_node = self._call_core(depth, state, parent_edge)
-        self._mark_rational(root_node)
-        return root_node
+    def __call__(self, depth: int, state: game.S) -> None:
+        if self._game.get_result(state=state) is not None:
+            raise RuntimeError("Game is already over.")
+        root_node_id = self._tree.add_root_node(state=state)
+        self._call_core_safe(depth=depth, node_id=root_node_id)
+        # self._mark_rational(root_node)
 
-    def _call_core(
-        self, depth: int, state: game.S, parent_edge: Optional[MinimaxEdge[game.A]] = None
-    ) -> MinimaxNode[game.S, game.A]:
-        is_terminal, terminal_score = self._game.get_terminal_score(state)
-        if is_terminal:
-            return MinimaxNode[game.S, game.A](
-                state=state, is_terminal=True, parent_edge=parent_edge, children=[], score=terminal_score
-            )
-        if depth == 0:
-            score = self._scorer(state)
-            return MinimaxNode[game.S, game.A](
-                state=state, is_terminal=False, parent_edge=parent_edge, children=[], score=score
-            )
-        available_actions = self._game.get_available_actions(state)
-        next_states = ((self._game.step(state, action), MinimaxEdge[game.A](action)) for action in available_actions)
-        next_nodes = [self._call_core(depth - 1, next_state, edge) for next_state, edge in next_states]
-        aggregator = min if state.next_turn == game.Turn.OPPONENT else max
-        score = aggregator(node.score for node in next_nodes)
-        return MinimaxNode[game.S, game.A](
-            state=state, is_terminal=False, parent_edge=parent_edge, children=next_nodes, score=score
-        )
-
-    def _mark_rational(self, node: MinimaxNode[game.S, game.A]) -> None:
-        node.is_rational = True
-        if node.parent_edge is not None:
-            node.parent_edge.is_rational = True
-
-        if node.is_terminal or len(node.children) == 0:
+    def _call_core_safe(self, depth: int, node_id: gametree.NodeId) -> None:
+        try:
+            self._call_core(depth, node_id)
+        except KeyError:  # すでにノードがない
             return
 
-        next_scores = [child.score for child in node.children]
-        aggregator = np.argmin if node.state.next_turn == game.Turn.OPPONENT else np.argmax
-        rational_node = node.children[int(aggregator(next_scores))]
-        self._mark_rational(rational_node)
+    def _call_core(self, depth: int, node_id: gametree.NodeId) -> None:
+        """与えられた node_id に対する score を計算する (つまり、この関数が呼ばれた時点で node はすでに tree に追加されている前提)"""
+        state, result = self._tree.get_node_state_result(node_id=node_id)
+        if result is not None:  # ゲーム終了
+            score = self._scorer(state)
+            self._tree.assign_node_property(node_id, "score", score)
+            return
+        if depth == 0:
+            score = self._scorer(state)
+            self._tree.assign_node_property(node_id, "score", score)
+            return
+        # ゲーム継続; 木を成長させつつ再帰呼び出し
+        next_actions = self._game.get_available_actions(state)
+        next_states = [self._game.step(state, action) for action in next_actions]
+        next_results = [self._game.get_result(state=state) for state in next_states]
+        children = []
+        for next_action, next_state, next_result in zip(next_actions, next_states, next_results):
+            child_node_id = self._tree.grow(
+                parent_node_id=node_id, action=next_action, state=next_state, result=next_result
+            )
+            self._call_core_safe(depth=depth - 1, node_id=child_node_id)
+            children.append(child_node_id)
+        # 子ノードのスコアを集約して自分のスコアを計算
+        scores: list[float] = []
+        for child_node_id in children:
+            try:
+                score = self._tree.get_node_property(node_id=child_node_id, key="score")
+                scores.append(score)
+            except KeyError:  # 子ノードが存在しない場合はスキップ
+                pass
+        aggregator = min if state.next_turn == game.Turn.OPPONENT else max
+        score = aggregator(scores)
+        self._tree.assign_node_property(node_id, "score", score)
+
+
+def get_rational_score(node: gametree.Node) -> float:
+    score: float = node.properties.get("score", float("-Inf"))
+    return score
 
 
 if __name__ == "__main__":
+    toy_scores = {
+        7: 40,
+        8: 0,
+        9: -1,
+        10: -20,
+        11: 10,
+        12: -10,
+        13: -5,
+        14: 30,
+    }
+
+    class ToyResult(game.Result):
+        def __init__(self, winner: Optional[game.Turn]) -> None:
+            self._winner = winner
+
+        @property
+        def winner(self) -> Optional[game.Turn]:
+            return self._winner
 
     class ToyState(game.State):
         def __init__(self, i: int) -> None:
@@ -145,23 +97,15 @@ if __name__ == "__main__":
             else:
                 return game.Turn.PLAYER
 
-        @property
-        def id(self) -> str:
-            return str(self.i)
-
         def __str__(self) -> str:
-            return f"Node #{self.i}"
+            return f"State #{self.i}"
 
     class ToyAction(game.Action):
         def __init__(self, to: int) -> None:
             self.to = to
 
-        @property
-        def id(self) -> str:
-            return str(self.to)
-
         def __str__(self) -> str:
-            return f"Edge #{self.to}"
+            return f"Action #{self.to}"
 
         @property
         def turn(self) -> game.Turn:
@@ -170,26 +114,16 @@ if __name__ == "__main__":
             else:
                 return game.Turn.OPPONENT
 
-    class ToyGame(game.Game[ToyState, ToyAction]):
-        def get_terminal_score(self, state: ToyState) -> tuple[bool, float]:
-            x = (
-                (False, float("nan")),
-                (False, float("nan")),
-                (False, float("nan")),
-                (False, float("nan")),
-                (False, float("nan")),
-                (False, float("nan")),
-                (False, float("nan")),
-                (True, 40),
-                (True, 0),
-                (True, -1),
-                (True, -20),
-                (True, 10),
-                (True, -10),
-                (True, -5),
-                (True, 30),
-            )
-            return x[state.i]
+    class ToyGame(game.Game[ToyResult, ToyState, ToyAction]):
+        def get_result(self, state: ToyState) -> Optional[ToyResult]:
+            if state.i < 7:
+                return None
+            if toy_scores[state.i] > 0:
+                return ToyResult(game.Turn.PLAYER)
+            elif toy_scores[state.i] == 0:
+                return ToyResult(None)
+            else:
+                return ToyResult(game.Turn.OPPONENT)
 
         def get_available_actions(self, state: ToyState) -> list[ToyAction]:
             if state.i >= 7:
@@ -203,26 +137,31 @@ if __name__ == "__main__":
         def __call__(self, state: ToyState) -> float:
             if state.i < 7:
                 return 0
-            x = {
-                7: 40,
-                8: 0,
-                9: -1,
-                10: -20,
-                11: 10,
-                12: -10,
-                13: -5,
-                14: 30,
-            }
-            return x[state.i]
+            return toy_scores[state.i]
 
-    minimax = Minimax[ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer())
-    root_node = minimax(depth=3, state=ToyState(0))
+    tree = gametree.Tree[ToyResult, ToyState, ToyAction]()
+    minimax = Minimax[ToyResult, ToyState, ToyAction, ToyScorer](ToyGame(), ToyScorer(), tree)
+    minimax(depth=3, state=ToyState(0))
 
+    import datetime as dt
     import json
     from pathlib import Path
 
-    outdir = Path("./out").resolve()
-    outdir.mkdir(exist_ok=True)
-
+    outdir = Path("./out").resolve() / dt.datetime.now().strftime("%Y%m%d_%H%M%S")
+    outdir.mkdir(exist_ok=True, parents=True)
+    d = tree.to_dict(get_rational_score)
+    # def typecheck(dd):
+    #     if isinstance(dd, dict):
+    #         ret = {}
+    #         for k, v in dd.items():
+    #             ret[k] = typecheck(v)
+    #         return ret
+    #     if isinstance(dd, list):
+    #         ret = []
+    #         for x in dd:
+    #             ret.append(typecheck(x))
+    #         return ret
+    #     return type(dd)
+    # t = typecheck(d)
     with open(outdir / "tree.json", "w") as f:
-        json.dump(root_node.to_dict(), f)
+        json.dump(d, f)

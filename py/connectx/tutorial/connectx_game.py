@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable, Callable, Sequence
+from typing import Iterable, Callable, Optional, Sequence
 
 import dataclasses
 import itertools
@@ -37,12 +37,6 @@ class ConnectXAction(game.Action):
         self.col = col
         self._turn = turn
 
-        self._id = str(uuid.uuid1())
-
-    @property
-    def id(self) -> str:
-        return self._id
-
     def __str__(self) -> str:
         return f"col={self.col}"
 
@@ -61,13 +55,20 @@ class ConnectXAction(game.Action):
         return f"ConnectXAction<col={self.col}>"
 
 
+class ConnectXResult(game.Result):
+    def __init__(self, winner: Optional[game.Turn]) -> None:
+        self._winner = winner
+
+    @property
+    def winner(self) -> Optional[game.Turn]:
+        return self._winner
+
+
 class ConnectXState(game.State):
     def __init__(self, grid: np.ndarray, next_player: Mark, step: int) -> None:
         self.grid = grid
         self.next_player = next_player
         self.step = step
-
-        self._id = str(uuid.uuid1())
 
     @property
     def next_turn(self) -> game.Turn:
@@ -76,33 +77,43 @@ class ConnectXState(game.State):
         else:
             return game.Turn.OPPONENT
 
-    @property
-    def id(self) -> str:
-        return self._id
-
     def __str__(self) -> str:
         return "\n".join("".join(str(x) for x in row) for row in self.grid.tolist())
 
 
-class ConnectXGame(game.Game[ConnectXState, ConnectXAction]):
+class ConnectXGame(game.Game[ConnectXResult, ConnectXState, ConnectXAction]):
     def __init__(self, columns: int, rows: int, inarow: int) -> None:
         self.columns = columns
         self.rows = rows
         self.inarow = inarow
 
-    def get_terminal_score(self, state: ConnectXState) -> tuple[bool, float]:
+    def get_result(self, state: ConnectXState) -> Optional[ConnectXResult]:
         """
-        state が最終状態 (それ以上手がない) であれば (True, terminal_score) を返す。
-        そうでない場合、(False, nan) を返す。
+        state が最終状態 (それ以上手がない) であれば Result を返す。
+        そうでない場合、None を返す。
         """
         for window in generate_windows(state.grid, self.inarow):
             if (window == 1).sum() == self.inarow:
-                return (True, 1_000_000)
+                return ConnectXResult(winner=game.Turn.PLAYER)
             elif (window == 2).sum() == self.inarow:
-                return (True, -10_000)
-        if len(self.get_available_actions(state)) == 0:
-            return (True, 0)
-        return (False, float("nan"))
+                return ConnectXResult(winner=game.Turn.OPPONENT)
+        if len(self.get_available_actions(state)) == 0:  # draw
+            return ConnectXResult(winner=None)
+        return None
+
+    # def get_terminal_score(self, state: ConnectXState) -> tuple[bool, float]:
+    #     """
+    #     state が最終状態 (それ以上手がない) であれば (True, terminal_score) を返す。
+    #     そうでない場合、(False, nan) を返す。
+    #     """
+    #     for window in generate_windows(state.grid, self.inarow):
+    #         if (window == 1).sum() == self.inarow:
+    #             return (True, 1_000_000)
+    #         elif (window == 2).sum() == self.inarow:
+    #             return (True, -10_000)
+    #     if len(self.get_available_actions(state)) == 0:
+    #         return (True, 0)
+    #     return (False, float("nan"))
 
     def get_available_actions(self, state: ConnectXState) -> list[ConnectXAction]:
         return [ConnectXAction(c, state.next_turn) for c in range(self.columns) if state.grid[0][c] == 0]

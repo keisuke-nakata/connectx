@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import abc
 import enum
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
 
 class Turn(enum.Enum):
@@ -10,13 +10,15 @@ class Turn(enum.Enum):
     OPPONENT = enum.auto()
 
 
+class Result(abc.ABC):
+    @abc.abstractproperty
+    def winner(self) -> Optional[Turn]:  # None は draw
+        pass
+
+
 class State(abc.ABC):
     @abc.abstractproperty
     def next_turn(self) -> Turn:
-        pass
-
-    @abc.abstractproperty
-    def id(self) -> str:
         pass
 
     # for node's `repr`
@@ -26,10 +28,6 @@ class State(abc.ABC):
 
 
 class Action(abc.ABC):
-    @abc.abstractproperty
-    def id(self) -> str:
-        pass
-
     # for edge's `repr`
     @abc.abstractmethod
     def __str__(self) -> str:
@@ -40,20 +38,21 @@ class Action(abc.ABC):
         pass
 
 
+R = TypeVar("R", bound=Result)
 S = TypeVar("S", bound=State)
 A = TypeVar("A", bound=Action)
 
 
-class Game(abc.ABC, Generic[S, A]):
+class Game(abc.ABC, Generic[R, S, A]):
     """
     ゲームのルールを記述するクラス。state は外に持ち、このクラス自体は状態を持たない
     """
 
     @abc.abstractmethod
-    def get_terminal_score(self, state: S) -> tuple[bool, float]:
+    def get_result(self, state: S) -> Optional[R]:
         """
-        state が最終状態 (それ以上手がない) であれば (True, terminal_score) を返す。
-        そうでない場合、(False, nan) を返す。
+        state が最終状態 (それ以上手がない) であれば Result を返す。
+        そうでない場合、None を返す。
         """
         pass
 
