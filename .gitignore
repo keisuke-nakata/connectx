@@ -160,3 +160,4 @@ cython_debug/
 #.idea/
 py/connectx/tutorial/out
 py/out
+py/connectx/analyze_log/out
