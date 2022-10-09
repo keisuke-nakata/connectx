@@ -1,0 +1,4 @@
+- game.py, gametree.py は見た。minimix.py を見直している途中
+- mcts.py をまるごと書き直す
+- get_available_actions は Game の関数であるのはいいけど、何度も呼ばれることになるので、Node を作成したときに Node に格納することにするのがいいのではないか
+- Game -> Rule に名前を直し、Game は Rule, Action, State をまとめたクラスにする？
